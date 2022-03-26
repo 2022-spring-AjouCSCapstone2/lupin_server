@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  mongodb:
+    container_name: lupin_mongodb
+    image: mongo:latest
+    environment:
+      - MONGO_HOST=localhost
+      - MONGO_PORT=27017
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_DATABASE=lupin
+    volumes:
+      - mongodb:/data/db
+    ports:
+      - 27017:27017
+
+  redis:
+    container_name: lupin_redis
+    image: redis
+    volumes:
+      - cache:/data
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+
+networks:
+    default:
+
+volumes:
+    mongodb:
+    cache:

@@ -1,0 +1,40 @@
+{
+    "name": "lupin_server",
+    "version": "1.0.0",
+    "description": "lupin system server",
+    "main": "index.js",
+    "scripts": {
+        "dev": "node index.js",
+        "lint": "eslint \"src/**/*.js\" --fix"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/2022-spring-AjouCSCapstone2/lupin_server.git"
+    },
+    "author": "Youngwoong You",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/2022-spring-AjouCSCapstone2/lupin_server/issues"
+    },
+    "type": "module",
+    "homepage": "https://github.com/2022-spring-AjouCSCapstone2/lupin_server#readme",
+    "dependencies": {
+        "body-parser": "^1.19.2",
+        "connect-redis": "^6.1.3",
+        "cookie-parser": "^1.4.6",
+        "dotenv": "^16.0.0",
+        "express": "^4.17.3",
+        "express-session": "^1.17.2",
+        "mongoose": "^6.2.8",
+        "redis": "^4.0.4",
+        "socket.io": "^4.4.1"
+    },
+    "devDependencies": {
+        "eslint": "^8.12.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-import": "^2.25.4",
+        "eslint-plugin-prettier": "^4.0.0",
+        "prettier": "^2.6.1"
+    }
+}
