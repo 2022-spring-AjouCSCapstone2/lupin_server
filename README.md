@@ -63,3 +63,28 @@ const aService = (body) => {
 
 -   파일 하나, 함수 하나에 DB 통신, request, reponse 관리 등을 한번에 할 경우, 수정시 매우 큰 cost가 들게 됩니다.
 -   수정할 때 cost를 줄이기 위해서 파일을 나누고, 수정해야 할 부분만 수정하는 형태로 작업을 진행하면 큰 도움이 됩니다.
+
+### 파일 이름 짓는 법
+
+-   일반적인 파일(서비스 코드, 라우터) : camelCase 활용 (ex. userService.js)
+-   DB 스키마 파일 : PascalCase 활용 (ex. User.js, UserClass.js)
+-   이외의 파일 : index.js 제외 (index.js는 원래 index.js로만 활용함)
+    -   이 부분의 경우, @유영웅 이 작업한 부분이기 때문에, 건드릴 부분이 있다면 얘기해주길 바랍니다!
+
+### git 사용법
+
+-   master branch는 가급적 직접적인 commit을 하지 않았으면 합니다.
+    -   이유 : 모두가 작업을 하고, 해당 작업을 하나의 repository에 합치게 되는데, 만약 겹치는 부분이 있다거나, 서로 버전이 맞지 않는 부분이 있다면 필연적으로 conflict가 발생합니다.
+-   그럼 어떻게 작업해야 하나요?
+    -   branch를 적극적으로 활용하고자 합니다.
+        -   branch가 뭐에요? 구글 검색하고 오십쇼
+        -   왜 fork 후 PR은 사용하지 않나요? fork하면 자신 개인의 repository가 되기 때문에, 가급적 작업시에는 팀 organization 안에서 했으면 좋겠습니다!
+    -   branch 이름 짓기
+        -   기능 추가 : feat/기능명 (ex. feat/user-service)
+        -   긴급한 수정 : hotfix/기능명 (ex. hotfix/login-error)
+    -   새 branch에 push한 후, 다른 팀원에게 합쳐도 괜찮을지 물어봐야 해요!
+        -   카톡으로? zoom에서? NO!
+        -   어떻게? PR을 활용합니다.
+        -   PR이 뭐에요? 구글 검색하고 오십쇼
+        -   PR이 완료되면, 새 branch에 작업한 결과가 master branch로 merge됩니다.
+        -   많은 PR을 통해, 우리는 완성도 높은 프로젝트를 성공할 수 있습니다!
