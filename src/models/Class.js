@@ -5,7 +5,7 @@ const classSchema = new mongoose.Schema({
     classId: { type: String, required: true },
     openingTime: { type: String, required: true },
     closingTime: { type: String, required: true },
-    teacher: {
+    professor: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User',
@@ -23,7 +23,7 @@ const classSchema = new mongoose.Schema({
 // name : string (강의명)
 // openingTime : string(임시) (강의 시작하는 시간)
 // closingTime : string(임시) (강의 끝나는 시간)
-// teacher: ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
+// professor: ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
 // students: array of ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
 
 const Class = mongoose.model('Class', classSchema);
