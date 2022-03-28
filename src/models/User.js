@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -30,6 +31,10 @@ const userSchema = new mongoose.Schema({
 // class: array of objectid (수강하는 과목들 -> Class DB에서 _id를 바탕으로 정보를 참조해옴)
 // meta: 부가적인 정보
 //      phone : string (전화번호)
+
+userSchema.pre('save', async function () {
+    this.password = await bcrypt.hash(this.password, 5);
+});
 
 const User = mongoose.model('User', userSchema);
 export default User;
