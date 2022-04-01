@@ -1,18 +1,27 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 
-const classSchema = new mongoose.Schema({
+interface course {
+    name: string;
+    classId: string;
+    openingTime: string;
+    closingTime: string;
+    professor: Types.ObjectId;
+    students: Types.ObjectId;
+}
+
+const courseSchema = new Schema<course>({
     name: { type: String, required: true },
     classId: { type: String, required: true },
     openingTime: { type: String, required: true },
     closingTime: { type: String, required: true },
     professor: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         required: true,
         ref: 'User',
     },
     students: [
         {
-            type: mongoose.Schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             ref: 'User',
         },
     ],
@@ -26,5 +35,6 @@ const classSchema = new mongoose.Schema({
 // professor: ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
 // students: array of ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
 
-const Class = mongoose.model('Class', classSchema);
-export default Class;
+const Course = mongoose.model<course>('Course', courseSchema);
+
+export default Course;

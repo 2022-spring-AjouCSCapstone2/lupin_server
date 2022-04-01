@@ -1,0 +1,29 @@
+{
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.d.ts"
+  ],
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "sourceRoot": "./",
+    "sourceMap": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "./@types"
+    ],
+    "paths": {
+      "~/*": ["src/*"]
+    },
+    "experimentalDecorators": true,
+    "preserveConstEnums": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "inlineSources": true
+  }
+}

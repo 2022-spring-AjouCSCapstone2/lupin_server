@@ -1,22 +1,23 @@
 import bcrypt from 'bcrypt';
-import mongoose from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 
-const userSchema = new mongoose.Schema({
+interface user {
+    name: string;
+    userType: string;
+    userId: number;
+    email: string;
+    password: string;
+    courses: Types.ObjectId;
+    meta: { phone: string };
+}
+
+const userSchema = new Schema<user>({
     name: { type: String, required: true },
-    userType: {
-        type: String,
-        enum: ['student', 'professor'],
-        required: true,
-    },
+    userType: { type: String, enum: ['student', 'professor'], required: true },
     userId: { type: Number, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
-    classes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Class',
-        },
-    ],
+    courses: { type: Schema.Types.ObjectId, ref: 'Course' },
     meta: {
         phone: { type: String },
     },
@@ -28,13 +29,12 @@ const userSchema = new mongoose.Schema({
 // name: string (사람이름)
 // email: string (이메일, 로그인시 아이디로 사용)
 // password: string (로그인시 사용하는 비밀번호)
-// class: array of objectid (수강하는 과목들 -> Class DB에서 _id를 바탕으로 정보를 참조해옴)
+// class: array of objectid (수강하는 과목들 -> Course DB에서 _id를 바탕으로 정보를 참조해옴)
 // meta: 부가적인 정보
 //      phone : string (전화번호)
 
-userSchema.pre('save', async function () {
+userSchema.pre('save', async function <user>() {
     this.password = await bcrypt.hash(this.password, 5);
 });
 
-const User = mongoose.model('User', userSchema);
-export default User;
+export const User = mongoose.model<user>('User', userSchema);

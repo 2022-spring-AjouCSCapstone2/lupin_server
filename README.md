@@ -66,9 +66,9 @@ const aService = (body) => {
 
 ### 파일 이름 짓는 법
 
--   일반적인 파일(서비스 코드, 라우터) : camelCase 활용 (ex. userService.js)
+-   일반적인 파일(서비스 코드, 라우터) : camelCase 활용 (ex. userService.ts)
 -   DB 스키마 파일 : PascalCase 활용 (ex. User.js, UserClass.js)
--   이외의 파일 : index.js 제외 (index.js는 원래 index.js로만 활용함)
+-   이외의 파일 : index.ts 제외 (index.ts는 원래 index.ts로만 활용함)
     -   이 부분의 경우, @유영웅 이 작업한 부분이기 때문에, 건드릴 부분이 있다면 얘기해주길 바랍니다!
 
 ### git 사용법
