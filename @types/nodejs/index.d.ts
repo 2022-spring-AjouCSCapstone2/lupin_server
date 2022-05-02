@@ -11,5 +11,7 @@ declare namespace NodeJS {
         DATABASE_USER: string;
         DATABASE_PASSWORD: string;
         DATABASE_SCHEMA: string;
+
+        SESSION_MODE: string;
     }
 }

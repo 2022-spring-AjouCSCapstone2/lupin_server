@@ -1,4 +1,7 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 import 'module-alias/register';
 import express from 'express';
 import passport from 'passport';
@@ -14,7 +17,7 @@ const app = express();
 
 const server = require('http').createServer(app);
 
-const io = new Server(server);
+const io = new Server(server, { cookie: true });
 
 app.use(logger('dev'));
 
@@ -55,7 +58,31 @@ app.get('/', (req, res) => {
 app.use(router);
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log(
+        'a user connected',
+        socket.handshake.auth,
+        socket.handshake.headers,
+    );
+
+    socket.on('createRoom', (info) => {
+        console.log('createRoom', info);
+    });
+
+    socket.on('joinRoom', (info) => {
+        console.log('joinRoom', info);
+    });
+
+    socket.on('leaveRoom', (info) => {
+        console.log('leaveRoom', info);
+    });
+
+    socket.on('message', (data) => {
+        console.log(data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
 });
 
 server.listen(+process.env.PORT, () => {
