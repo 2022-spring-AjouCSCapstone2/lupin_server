@@ -1,3 +1,5 @@
+import { Session } from 'express-session';
+
 declare namespace NodeJS {
     interface ProcessEnv {
         REDIS_HOST: string;
@@ -13,5 +15,11 @@ declare namespace NodeJS {
         DATABASE_SCHEMA: string;
 
         SESSION_MODE: string;
+    }
+}
+
+declare module 'http' {
+    interface IncomingMessage {
+        session: Session;
     }
 }

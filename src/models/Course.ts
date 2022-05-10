@@ -35,6 +35,4 @@ const courseSchema = new Schema<course>({
 // professor: ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
 // students: array of ObjectId (담당교수 -> User DB에서 _id를 바탕으로 정보를 참조해옴)
 
-const Course = mongoose.model<course>('Course', courseSchema);
-
-export default Course;
+export const Course = mongoose.model<course>('Course', courseSchema);

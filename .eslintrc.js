@@ -5,7 +5,11 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    extends: ['airbnb-base', 'plugin:prettier/recommended', 'plugin:@typescript-eslint/recommended'],
+    extends: [
+        'airbnb-base',
+        'plugin:prettier/recommended',
+        'plugin:@typescript-eslint/recommended',
+    ],
     parserOptions: {
         ecmaVersion: 12,
         sourceType: 'module',
@@ -22,5 +26,6 @@ module.exports = {
         'import/no-unresolved': 'off',
         'import/prefer-default-export': 'off',
         'import/first': 'off',
+        'consistent-return': 'off',
     },
 };

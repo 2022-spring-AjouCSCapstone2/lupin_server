@@ -15,6 +15,7 @@ import { databaseConfig, passportConfig } from '~/config';
 
 const app = express();
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const server = require('http').createServer(app);
 
 const io = new Server(server, { cookie: true });
@@ -56,6 +57,26 @@ app.get('/', (req, res) => {
 });
 
 app.use(router);
+
+const wrap = (middleware) => (socket, next) => {
+    middleware(socket.request, {}, next);
+};
+
+io.use(wrap(session));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
+io.use((socket, next) => {
+    const sess = socket.request.session;
+
+    console.log(sess);
+
+    if (sess) {
+        next();
+    } else {
+        next(new Error('Authentication Failed'));
+    }
+});
 
 io.on('connection', (socket) => {
     console.log(
