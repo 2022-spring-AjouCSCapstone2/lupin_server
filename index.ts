@@ -78,6 +78,10 @@ io.use((socket, next) => {
     }
 });
 
+// 임시 값
+const rooms = new Map();
+let newRoomId = 90000001;
+
 io.on('connection', (socket) => {
     console.log(
         'a user connected',
@@ -85,16 +89,39 @@ io.on('connection', (socket) => {
         socket.handshake.headers,
     );
 
-    socket.on('createRoom', (info) => {
+    socket.on('showRoom', (info) => {
+        socket.emit('showRoomList', JSON.stringify(rooms.entries()));
+    });
+
+    socket.on('createRoom', (roomData, info, callback) => {
         console.log('createRoom', info);
+        const roomId = String(newRoomId);
+        newRoomId += 1;
+        rooms.set(roomId, roomData);
+        socket.join(roomId);
+        callback(roomId);
     });
 
-    socket.on('joinRoom', (info) => {
+    socket.on('joinRoom', (roomId, info, callback) => {
         console.log('joinRoom', info);
+        const roomData = rooms.get(roomId);
+
+        if (roomData !== undefined) {
+            socket.join(roomId);
+
+            socket.to(roomId).emit('newStudent', socket.id);
+
+            callback([...io.sockets.adapter.rooms.get(roomId)], roomData);
+        } else {
+            socket.emit('noRoom', 'Wrong Room ID');
+        }
     });
 
-    socket.on('leaveRoom', (info) => {
+    socket.on('leaveRoom', (roomId, info, callback) => {
         console.log('leaveRoom', info);
+        socket.to(roomId).emit('studentLeaved', socket.id);
+        socket.leave(roomId);
+        callback();
     });
 
     socket.on('message', (data) => {
