@@ -22,7 +22,7 @@ export class JoinRequest extends BaseDto {
     @IsString()
     userType: string;
 
-    public toDocument() {
+    public toEntity() {
         return plainToInstance(User, this);
     }
 }

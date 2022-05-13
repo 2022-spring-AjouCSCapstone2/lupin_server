@@ -11,7 +11,16 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import router from '~/routes';
 import { session } from '~/middlewares';
-import { databaseConfig, passportConfig } from '~/config';
+import { dataSource, passportConfig } from '~/config';
+
+dataSource
+    .initialize()
+    .then(() => {
+        console.log('Database has been initialized');
+    })
+    .catch((err) => {
+        console.error('Database config error', err);
+    });
 
 const app = express();
 
@@ -32,8 +41,6 @@ app.use(
 );
 
 app.use(cookieParser());
-
-databaseConfig();
 
 app.use(session);
 

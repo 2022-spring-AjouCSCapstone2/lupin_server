@@ -15,6 +15,8 @@ declare namespace NodeJS {
         DATABASE_SCHEMA: string;
 
         SESSION_MODE: string;
+
+        NODE_ENV: string;
     }
 }
 

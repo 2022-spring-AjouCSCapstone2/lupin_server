@@ -27,5 +27,6 @@ module.exports = {
         'import/prefer-default-export': 'off',
         'import/first': 'off',
         'consistent-return': 'off',
+        'no-shadow': 'off',
     },
 };
