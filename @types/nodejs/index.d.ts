@@ -25,3 +25,11 @@ declare module 'http' {
         session: Session;
     }
 }
+
+declare global {
+    namespace Express {
+        interface User {
+            userId: number;
+        }
+    }
+}
