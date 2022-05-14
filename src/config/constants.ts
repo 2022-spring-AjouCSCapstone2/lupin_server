@@ -1,4 +1,10 @@
 export enum userType {
-    student = 'student',
-    professor = 'professor',
+    STUDENT = 'STUDENT',
+    PROFESSOR = 'PROFESSOR',
+}
+
+export enum courseLogType {
+    QUESTION = 'question',
+    RECORDING = 'recording',
+    SCRIPT = 'script',
 }

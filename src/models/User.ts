@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { userType } from '~/config';
 import { Course } from '~/models/Course';
+import { Post } from '~/models/Post';
 
 @Entity({ name: 'users' })
 export class User {
@@ -27,7 +28,7 @@ export class User {
     name!: string;
 
     // 유저 분류
-    @Column({ type: 'enum', enum: userType, default: userType.student })
+    @Column({ type: 'enum', enum: userType, default: userType.STUDENT })
     userType!: userType;
 
     @Column({ nullable: false, unique: true })
@@ -39,7 +40,7 @@ export class User {
     @Column()
     phone!: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
     @JoinTable({
@@ -61,6 +62,9 @@ export class User {
         nullable: false,
     })
     lectures!: Course[];
+
+    @OneToMany(() => Post, (post) => post.user, { onDelete: 'CASCADE' })
+    posts!: Post[];
 
     @BeforeInsert()
     async hashPassword() {

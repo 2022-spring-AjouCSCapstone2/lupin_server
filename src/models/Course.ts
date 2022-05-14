@@ -3,9 +3,13 @@ import {
     Entity,
     ManyToMany,
     ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '~/models/User';
+import { CourseLog } from '~/models/CourseLog';
+import { Post } from '~/models/Post';
+import { Comment } from '~/models/Comment';
 
 @Entity({ name: 'courses' })
 export class Course {
@@ -29,4 +33,12 @@ export class Course {
 
     @ManyToMany(() => User, (user) => user.courses, { cascade: true })
     students: User[];
+
+    @OneToMany(() => CourseLog, (courseLog) => courseLog.course, {
+        onDelete: 'CASCADE',
+    })
+    courseLogs: CourseLog[];
+
+    @OneToMany(() => Post, (post) => post.course, { onDelete: 'CASCADE' })
+    posts!: Post[];
 }
