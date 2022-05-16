@@ -18,7 +18,7 @@ export class JoinRequest extends BaseDto {
     @IsNumber()
     userId: number;
 
-    @IsIn(['student', 'professor'])
+    @IsIn(['STUDENT', 'PROFESSOR'])
     @IsString()
     userType: string;
 

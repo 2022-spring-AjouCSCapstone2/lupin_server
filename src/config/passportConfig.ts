@@ -1,7 +1,8 @@
 import bcrypt from 'bcrypt';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { userRepository } from '~/repositories';
+import { dataSource } from '~/config/databaseConfig';
+import { User } from '~/models';
 
 export const passportConfig = () => {
     passport.use(
@@ -9,7 +10,9 @@ export const passportConfig = () => {
             { usernameField: 'email', passwordField: 'password' },
             async (email, password, done) => {
                 try {
-                    const user = await userRepository.findOneBy({ email });
+                    const user = await dataSource.manager.findOneBy(User, {
+                        email,
+                    });
                     if (user) {
                         const isMatch = await bcrypt.compare(
                             password,
@@ -40,7 +43,7 @@ export const passportConfig = () => {
 
     passport.deserializeUser(async (user: any, done) => {
         try {
-            const result = await userRepository.findOneBy({
+            const result = await dataSource.manager.findOneBy(User, {
                 email: user.email,
             });
 
