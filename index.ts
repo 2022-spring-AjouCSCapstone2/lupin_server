@@ -97,7 +97,7 @@ io.on('connection', (socket) => {
     );
 
     socket.on('showRoom', (info) => {
-        socket.emit('showRoomList', JSON.stringify(rooms.entries()));
+        socket.emit('showRoom', JSON.stringify(Array.from(rooms.entries())));
     });
 
     socket.on('createRoom', (roomData, info, callback) => {
@@ -105,20 +105,28 @@ io.on('connection', (socket) => {
         const roomId = String(newRoomId);
         newRoomId += 1;
         rooms.set(roomId, roomData);
+        console.log(rooms);
         socket.join(roomId);
         callback(roomId);
     });
 
-    socket.on('joinRoom', (roomId, info, callback) => {
+    socket.on('joinRoom', (info, callback) => {
         console.log('joinRoom', info);
+        const roomId = String(info.roomId);
         const roomData = rooms.get(roomId);
+        console.log(roomId, roomData);
 
         if (roomData !== undefined) {
             socket.join(roomId);
 
             socket.to(roomId).emit('newStudent', socket.id);
 
-            callback([...io.sockets.adapter.rooms.get(roomId)], roomData);
+            console.log(io.sockets.adapter.rooms);
+            callback({
+                sessions: [...io.sockets.adapter.rooms.get(roomId)],
+                roomData,
+            });
+            // callback([...io.sockets.adapter.rooms.get(roomId)], roomData);
         } else {
             socket.emit('noRoom', 'Wrong Room ID');
         }
