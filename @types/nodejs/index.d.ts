@@ -29,6 +29,7 @@ declare module 'http' {
 declare global {
     namespace Express {
         interface User {
+            id: number;
             userId: number;
         }
     }
