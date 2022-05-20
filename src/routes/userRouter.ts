@@ -1,10 +1,10 @@
-import express from 'express';
+import { Router } from 'express';
 import passport from 'passport';
 import { isLoggedIn, isNotLoggedIn, validationMiddleware } from '~/middlewares';
 import { JoinRequest, LoginRequest } from '~/dto';
-import { join } from '~/services';
+import * as userService from '~/services';
 
-const router = express.Router();
+const router = Router();
 
 router.post(
     '/login',
@@ -20,7 +20,8 @@ router.post(
 router.post('/join', validationMiddleware(JoinRequest), (req, res, next) => {
     const dto: JoinRequest = req.body;
 
-    join(dto)
+    userService
+        .join(dto)
         .then((data) => {
             res.status(201).json(data);
         })

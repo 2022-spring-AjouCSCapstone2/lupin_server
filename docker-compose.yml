@@ -1,19 +1,24 @@
 version: '3'
 
 services:
-  mongodb:
-    container_name: lupin_mongodb
-    image: mongo:latest
+  mysql:
+    container_name: lupin_mysql
+    image: mysql
+    command:
+      - --lower_case_table_names=1
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
     environment:
-      - MONGO_HOST=localhost
-      - MONGO_PORT=27017
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-      - MONGO_INITDB_DATABASE=lupin
+      - MYSQL_USER=developer
+      - MYSQL_PASSWORD=1234
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=lupin
+      - TZ=UTC
+    restart: always
     volumes:
-      - mongodb:/data/db
+      - mysql:/var/lib/mysql
     ports:
-      - 27017:27017
+      - 3306:3306
 
   redis:
     container_name: lupin_redis
@@ -25,8 +30,8 @@ services:
     restart: unless-stopped
 
 networks:
-    default:
+  default:
 
 volumes:
-    mongodb:
-    cache:
+  mysql:
+  cache:

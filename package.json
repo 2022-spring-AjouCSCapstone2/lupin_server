@@ -27,14 +27,18 @@
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
         "express-session": "^1.17.2",
-        "ioredis": "^5.0.3",
+        "ioredis": "^4.28.5",
         "module-alias": "^2.2.2",
         "mongoose": "^6.2.8",
         "morgan": "^1.10.0",
+        "mysql2": "^2.3.3",
         "passport": "^0.5.2",
         "passport-local": "^1.0.0",
+        "reflect-metadata": "^0.1.13",
         "session-file-store": "^1.5.0",
-        "socket.io": "^4.4.1"
+        "socket.io": "^4.4.1",
+        "typeorm": "^0.3.6",
+        "typeorm-naming-strategies": "^4.1.0"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.0",

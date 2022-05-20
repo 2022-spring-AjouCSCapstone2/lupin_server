@@ -18,11 +18,11 @@ export class JoinRequest extends BaseDto {
     @IsNumber()
     userId: number;
 
-    @IsIn(['student', 'professor'])
+    @IsIn(['STUDENT', 'PROFESSOR'])
     @IsString()
     userType: string;
 
-    public toDocument() {
+    public toEntity() {
         return plainToInstance(User, this);
     }
 }

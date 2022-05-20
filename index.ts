@@ -11,10 +11,20 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import router from '~/routes';
 import { session } from '~/middlewares';
-import { databaseConfig, passportConfig } from '~/config';
+import { dataSource, passportConfig } from '~/config';
+
+dataSource
+    .initialize()
+    .then(() => {
+        console.log('Database has been initialized');
+    })
+    .catch((err) => {
+        console.error('Database config error', err);
+    });
 
 const app = express();
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const server = require('http').createServer(app);
 
 const io = new Server(server, { cookie: true });
@@ -31,8 +41,6 @@ app.use(
 );
 
 app.use(cookieParser());
-
-databaseConfig();
 
 app.use(session);
 
@@ -57,6 +65,30 @@ app.get('/', (req, res) => {
 
 app.use(router);
 
+const wrap = (middleware) => (socket, next) => {
+    middleware(socket.request, {}, next);
+};
+
+io.use(wrap(session));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
+io.use((socket, next) => {
+    const sess = socket.request.session;
+
+    console.log(sess);
+
+    if (sess) {
+        next();
+    } else {
+        next(new Error('Authentication Failed'));
+    }
+});
+
+// 임시 값
+const rooms = new Map();
+let newRoomId = 90000001;
+
 io.on('connection', (socket) => {
     console.log(
         'a user connected',
@@ -64,16 +96,39 @@ io.on('connection', (socket) => {
         socket.handshake.headers,
     );
 
-    socket.on('createRoom', (info) => {
+    socket.on('showRoom', (info) => {
+        socket.emit('showRoomList', JSON.stringify(rooms.entries()));
+    });
+
+    socket.on('createRoom', (roomData, info, callback) => {
         console.log('createRoom', info);
+        const roomId = String(newRoomId);
+        newRoomId += 1;
+        rooms.set(roomId, roomData);
+        socket.join(roomId);
+        callback(roomId);
     });
 
-    socket.on('joinRoom', (info) => {
+    socket.on('joinRoom', (roomId, info, callback) => {
         console.log('joinRoom', info);
+        const roomData = rooms.get(roomId);
+
+        if (roomData !== undefined) {
+            socket.join(roomId);
+
+            socket.to(roomId).emit('newStudent', socket.id);
+
+            callback([...io.sockets.adapter.rooms.get(roomId)], roomData);
+        } else {
+            socket.emit('noRoom', 'Wrong Room ID');
+        }
     });
 
-    socket.on('leaveRoom', (info) => {
+    socket.on('leaveRoom', (roomId, info, callback) => {
         console.log('leaveRoom', info);
+        socket.to(roomId).emit('studentLeaved', socket.id);
+        socket.leave(roomId);
+        callback();
     });
 
     socket.on('message', (data) => {
