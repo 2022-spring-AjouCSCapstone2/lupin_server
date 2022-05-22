@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
+import cors from 'cors';
 import router from '~/routes';
 import { session } from '~/middlewares';
 import { dataSource, passportConfig } from '~/config';
@@ -28,6 +29,13 @@ const app = express();
 const server = require('http').createServer(app);
 
 const io = new Server(server, { cookie: true });
+
+app.use(
+    cors({
+        origin: '*',
+        methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    }),
+);
 
 app.use(logger('dev'));
 
