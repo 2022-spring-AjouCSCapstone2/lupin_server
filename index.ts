@@ -30,12 +30,7 @@ const server = require('http').createServer(app);
 
 const io = new Server(server, { cookie: true });
 
-app.use(
-    cors({
-        origin: '*',
-        methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    }),
-);
+app.use(cors());
 
 app.use(logger('dev'));
 
