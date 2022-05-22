@@ -9,7 +9,6 @@ import {
 import { User } from '~/models/User';
 import { CourseLog } from '~/models/CourseLog';
 import { Post } from '~/models/Post';
-import { Comment } from '~/models/Comment';
 
 @Entity({ name: 'courses' })
 export class Course {
