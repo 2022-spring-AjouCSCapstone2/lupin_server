@@ -28,5 +28,6 @@ module.exports = {
         'import/first': 'off',
         'consistent-return': 'off',
         'no-shadow': 'off',
+        'prefer-destructuring': 'off'
     },
 };
