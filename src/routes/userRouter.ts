@@ -10,7 +10,7 @@ router.post(
     '/login',
     isNotLoggedIn,
     validationMiddleware(LoginRequest),
-    passport.authenticate('local'),
+    passport.authenticate('local', { failureMessage: true }),
     (req, res, next) => {
         console.log(req.user, req.session);
         res.status(200).json(req.user);
@@ -30,10 +30,11 @@ router.post('/join', validationMiddleware(JoinRequest), (req, res, next) => {
 
 router.get('/logout', isLoggedIn, (req, res, next) => {
     req.logout();
-    req.session.save((err) => {
+    req.session.destroy((err) => {
         if (err) {
             return next(err);
         }
+        res.clearCookie('connect.sid');
         res.status(204).end();
     });
 });

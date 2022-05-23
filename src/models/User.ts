@@ -1,6 +1,4 @@
-import bcrypt from 'bcrypt';
 import {
-    BeforeInsert,
     Column,
     CreateDateColumn,
     Entity,
@@ -65,16 +63,4 @@ export class User {
 
     @OneToMany(() => Post, (post) => post.user, { onDelete: 'CASCADE' })
     posts!: Post[];
-
-    @BeforeInsert()
-    async hashPassword() {
-        this.password = await bcrypt.hash(this.password, 5);
-    }
-
-    static of(userId: number): User {
-        const user = new User();
-        user.userId = userId;
-
-        return user;
-    }
 }

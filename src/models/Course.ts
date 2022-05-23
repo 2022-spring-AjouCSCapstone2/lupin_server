@@ -19,7 +19,7 @@ export class Course {
     name!: string;
 
     @Column()
-    classId!: string;
+    courseId!: string;
 
     @Column()
     openingTime!: string;
