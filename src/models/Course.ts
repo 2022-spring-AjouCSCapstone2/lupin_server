@@ -9,6 +9,7 @@ import {
 import { User } from '~/models/User';
 import { CourseLog } from '~/models/CourseLog';
 import { Post } from '~/models/Post';
+import { Timetable } from '~/models/Timetable';
 
 @Entity({ name: 'courses' })
 export class Course {
@@ -40,4 +41,9 @@ export class Course {
 
     @OneToMany(() => Post, (post) => post.course, { onDelete: 'CASCADE' })
     posts!: Post[];
+
+    @OneToMany(() => Timetable, (timetable) => timetable.course, {
+        onDelete: 'CASCADE',
+    })
+    timetables: Timetable[];
 }
