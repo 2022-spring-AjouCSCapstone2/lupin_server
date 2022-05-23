@@ -12,6 +12,6 @@ export const getMyCourses = (id: number) => {
     return courseRepository.findBy({ students: { id } });
 };
 
-export const getCourseByClassId = (classId: string) => {
-    return courseRepository.findOneBy({ classId });
+export const getCourseByCourseId = (courseId: string) => {
+    return courseRepository.findOneBy({ courseId });
 };

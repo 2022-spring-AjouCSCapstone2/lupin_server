@@ -1,6 +1,6 @@
 import { IsEmpty, IsString } from 'class-validator';
-import { Post } from '~/models';
 import { plainToInstance } from 'class-transformer';
+import { Post } from '~/models';
 import { BaseDto } from '../BaseDto';
 
 export class SavePostRequest extends BaseDto {
@@ -17,6 +17,8 @@ export class SavePostRequest extends BaseDto {
     userId!: number;
 
     toEntity(): Post {
-        return plainToInstance(Post, this);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { userId, courseId, ...params } = this;
+        return plainToInstance(Post, params);
     }
 }

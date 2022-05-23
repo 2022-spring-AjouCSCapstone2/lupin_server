@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { isLoggedIn, validationMiddleware } from '~/middlewares';
-import { SavePostRequest } from '~/dto/request/SavePostRequest';
+import { PostResponse, SavePostRequest } from '~/dto';
 import * as postService from '~/services/postService';
 
 const router = Router();
@@ -22,7 +22,7 @@ router.get('/:postId', (req, res, next) => {
     postService
         .getPostByPostId(Number(postId))
         .then((data) => {
-            res.json(data);
+            res.json(new PostResponse(data));
         })
         .catch(next);
 });
@@ -33,12 +33,12 @@ router.post(
     validationMiddleware(SavePostRequest),
     (req, res, next) => {
         const body: SavePostRequest = req.body;
-        body.userId = req.user.id;
+        body.userId = req.user.userId;
 
         postService
             .savePost(body)
             .then((data) => {
-                res.json(data);
+                res.json(new PostResponse(data));
             })
             .catch(next);
     },

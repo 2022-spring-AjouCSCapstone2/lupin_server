@@ -33,7 +33,7 @@ router.get('/:courseId', (req, res, next) => {
     // 특정 수업 정보 조회 (수강번호 기준 X123)
     const { courseId } = req.params;
     courseService
-        .getCourseByClassId(courseId)
+        .getCourseByCourseId(courseId)
         .then((data) => {
             res.json(data);
         })
