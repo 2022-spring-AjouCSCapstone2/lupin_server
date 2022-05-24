@@ -25,8 +25,15 @@ router.get('/all', (req, res, next) => {
         .catch((err) => next());
 });
 
-router.get('/today', (req, res) => {
+router.get('/today', isLoggedIn, (req, res, next) => {
     // 오늘 수강하는 수업 목록 조회
+    const { id } = req.user;
+    courseService
+        .getTodayCourses(id)
+        .then((data) => {
+            res.json(data);
+        })
+        .catch(next);
 });
 
 router.get('/:courseId', (req, res, next) => {
