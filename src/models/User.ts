@@ -38,6 +38,9 @@ export class User {
     @Column({ default: null })
     phone!: string;
 
+    @Column({ nullable: true })
+    path!: string;
+
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 

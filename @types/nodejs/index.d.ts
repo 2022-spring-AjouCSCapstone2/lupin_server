@@ -17,6 +17,10 @@ declare namespace NodeJS {
         SESSION_MODE: string;
 
         NODE_ENV: string;
+
+        AWS_S3_ACCESS_KEY: string;
+        AWS_S3_SECRET_KEY: string;
+        AWS_S3_BUCKET: string;
     }
 }
 
