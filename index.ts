@@ -13,6 +13,7 @@ import cors from 'cors';
 import router from '~/routes';
 import { session } from '~/middlewares';
 import { dataSource, passportConfig } from '~/config';
+import { getMyCourseByCourseId } from './src/services';
 
 dataSource
     .initialize()
@@ -28,7 +29,14 @@ const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const server = require('http').createServer(app);
 
-const io = new Server(server, { cookie: true });
+const io = new Server(server, {
+    cookie: true,
+    cors: {
+        origin: ['http://localhost:3000', '*'],
+        methods: ['GET', 'POST'],
+        credentials: true,
+    },
+});
 
 app.use(
     cors({
@@ -99,52 +107,80 @@ let newRoomId = 90000001;
 
 io.on('connection', (socket) => {
     console.log(
-        'a user connected',
-        socket.handshake.auth,
-        socket.handshake.headers,
+        `a user ${socket.request.user?.userId} connected`,
+        socket.request.user,
     );
+
+    // socket.on('create-room', (room) => {
+    //     console.log(
+    //         `room ${room} was created on ${+new Date().toDateString()}`,
+    //     );
+    // });
+    //
+    // socket.on('join-room', (room, id) => {
+    //     console.log(
+    //         `socket ${id} was joined room ${room} on ${+new Date().toDateString()}`,
+    //     );
+    // });
+    //
+    // socket.on('leave-room', (room, id) => {
+    //     console.log(
+    //         `socket ${id} was leaved from room ${room} on ${+new Date().toDateString()}`,
+    //     );
+    // });
 
     socket.on('showRoom', (info) => {
         socket.emit('showRoom', JSON.stringify(Array.from(rooms.entries())));
     });
 
-    socket.on('createRoom', (roomData, info, callback) => {
-        console.log('createRoom', info);
-        const roomId = String(newRoomId);
-        newRoomId += 1;
-        rooms.set(roomId, roomData);
-        console.log(rooms);
+    socket.on('createRoom', (data: { courseId: string }, callback) => {
+        const user = socket.request.user;
+        const roomId = `${data.courseId}-${+new Date()}`;
+
+        if (!user || user.userType !== 'PROFESSOR') {
+            callback('Forbidden');
+        }
         socket.join(roomId);
+
         callback(roomId);
     });
 
-    socket.on('joinRoom', (info, callback) => {
-        console.log('joinRoom', info);
-        const roomId = String(info.roomId);
-        const roomData = rooms.get(roomId);
-        console.log(roomId, roomData);
+    socket.on('joinRoom', async (data: { courseId: string }, callback) => {
+        const user = socket.request.user;
+        const course = await getMyCourseByCourseId(user.id, data.courseId);
 
-        if (roomData !== undefined) {
-            socket.join(roomId);
+        if (!course) {
+            callback('Forbidden');
+        }
 
-            socket.to(roomId).emit('newStudent', socket.id);
+        const rooms = [...io.sockets.adapter.rooms.keys()];
+        const roomIdRegex = new RegExp(`${data.courseId}-[0-9]+`);
 
-            console.log(io.sockets.adapter.rooms);
-            callback({
-                sessions: [...io.sockets.adapter.rooms.get(roomId)],
-                roomData,
+        const foundRoomId = rooms.find((value) => roomIdRegex.test(value));
+        if (foundRoomId) {
+            socket.join(foundRoomId);
+
+            socket.to(foundRoomId).emit('newStudent', {
+                socketId: socket.id,
+                userId: user.userId,
             });
-            // callback([...io.sockets.adapter.rooms.get(roomId)], roomData);
+
+            callback(foundRoomId);
         } else {
-            socket.emit('noRoom', 'Wrong Room ID');
+            callback('no course session opened');
         }
     });
 
-    socket.on('leaveRoom', (roomId, info, callback) => {
-        console.log('leaveRoom', info);
-        socket.to(roomId).emit('studentLeaved', socket.id);
-        socket.leave(roomId);
-        callback();
+    socket.on('leaveRoom', (data: { roomId: string }, callback) => {
+        const user = socket.request.user;
+
+        socket.leave(data.roomId);
+
+        socket.to(data.roomId).emit('studentLeaved', {
+            socketId: socket.id,
+            userId: user.userId,
+        });
+        callback('success');
     });
 
     socket.on('message', (data) => {
@@ -152,8 +188,54 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        const user = socket.request.user;
+        console.log(`a user ${user?.userId} disconnected`);
     });
+
+    // 익명 질문, 포인트 증감, 퀴즈 출제
+    socket.on('question', (data) => {
+        const userInfo = socket.request.user;
+        console.log(userInfo);
+        /** data format
+         * {
+         *     content: string,
+         *     isAnonymous: boolean
+         * }
+         */
+        console.log(data);
+    });
+
+    socket.on('checkQuestion', (data) => {
+        /** data format
+         * {
+         *     point: boolean // true -> plus, false -> minus
+         * }
+         */
+        console.log(data);
+    });
+
+    socket.on('quiz', (data) => {
+        /** data format (객관식 형태 지원)
+         * {
+         *     question: string,
+         *     data: [
+         *         {
+         *             number: number,
+         *             state: string,
+         *             isAnswer: boolean
+         *         },
+         *         {
+         *             number: number,
+         *             state: string,
+         *             isAnswer: boolean
+         *         }
+         *     ]
+         * }
+         */
+        console.log(data);
+    });
+
+    // 익명 질문 저장, 포인트 결과 저장, 음성 녹음 저장
 });
 
 server.listen(+process.env.PORT, () => {
