@@ -101,10 +101,6 @@ io.use((socket, next) => {
     }
 });
 
-// 임시 값
-const rooms = new Map();
-let newRoomId = 90000001;
-
 io.on('connection', (socket) => {
     console.log(
         `a user ${socket.request.user?.userId} connected`,
