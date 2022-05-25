@@ -126,7 +126,10 @@ io.on('connection', (socket) => {
     // });
 
     socket.on('showRoom', (info) => {
-        socket.emit('showRoom', JSON.stringify(Array.from(rooms.entries())));
+        socket.emit(
+            'showRoom',
+            JSON.stringify(Array.from(io.sockets.adapter.rooms.entries())),
+        );
     });
 
     socket.on('createRoom', (data: { courseId: string }, callback) => {
