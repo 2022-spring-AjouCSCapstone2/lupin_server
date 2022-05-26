@@ -18,6 +18,18 @@ export const getMyCourses = (id: number) => {
     });
 };
 
+export const getMyCourseByCourseId = (id: number, courseId: string) => {
+    return courseRepository.findOne({
+        where: {
+            students: {
+                id,
+            },
+            courseId,
+        },
+        relations: ['students'],
+    });
+};
+
 export const getCourseByCourseId = (courseId: string) => {
     return courseRepository.findOne({
         where: {
