@@ -13,8 +13,15 @@ import cors from 'cors';
 import router from '~/routes';
 import { session } from '~/middlewares';
 import { dataSource, passportConfig } from '~/config';
-import { saveLog, getMyCourseByCourseId, updatePoint } from '~/services';
-import { SaveLogRequest } from './src/dto';
+import {
+    saveLog,
+    getMyCourseByCourseId,
+    updatePoint,
+    getQuizById,
+    saveQuiz,
+    saveQuizLog,
+} from '~/services';
+import { SaveLogRequest, SubmitQuizRequest } from './src/dto';
 
 dataSource
     .initialize()
@@ -223,38 +230,38 @@ io.on('connection', (socket) => {
         },
     );
 
-    socket.on('quiz', (data, callback) => {
-        /** data format (객관식 형태 지원)
-         * {
-         *     question: string,
-         *     data: [
-         *         {
-         *             number: number,
-         *             state: string,
-         *             isAnswer: boolean
-         *         },
-         *         {
-         *             number: number,
-         *             state: string,
-         *             isAnswer: boolean
-         *         }
-         *     ]
-         * }
-         */
-        console.log(data);
+    socket.on('quiz', async (data: SubmitQuizRequest, callback) => {
+        const user = socket.request.user;
+
+        if (!user || user.userType !== 'PROFESSOR') {
+            callback('Forbidden');
+        }
+
+        try {
+            const savedQuiz = await saveQuiz(data);
+            socket.to(data.roomId).emit('quiz', savedQuiz);
+            callback(savedQuiz);
+        } catch (e) {
+            callback(e);
+        }
     });
 
-    socket.on('quizAnswer', (data, callback) => {
-        // const { quizId, answer } = data;
-        // quiz 데이터 및 답 찾기
-        // const quiz = getQuizById(quizId);
-        // quiz 답 맞는지 체크
-        // 유저 기록에 퀴즈 맞았는지 틀렸는지 기록
-        // const isAnswer = answer === quiz.answer;
-        // 대충 save(user, { quizId, isAnswer });
-        // callback(isAnswer);
-    });
-    // 익명 질문 저장, 포인트 결과 저장, 음성 녹음 저장
+    socket.on(
+        'quizAnswer',
+        async (data: { quizId: number; answer: number }, callback) => {
+            const user = socket.request.user;
+            const quiz = await getQuizById(data.quizId);
+
+            const isAnswer = quiz.answer.no === data.answer;
+            const savedQuizLog = await saveQuizLog({
+                answer: data.answer,
+                isAnswer,
+                quizId: data.quizId,
+                userId: user.id,
+            });
+            callback(savedQuizLog.isAnswer);
+        },
+    );
 });
 
 server.listen(+process.env.PORT, () => {
