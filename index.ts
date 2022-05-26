@@ -13,7 +13,8 @@ import cors from 'cors';
 import router from '~/routes';
 import { session } from '~/middlewares';
 import { dataSource, passportConfig } from '~/config';
-import { getMyCourseByCourseId } from './src/services';
+import { saveLog, getMyCourseByCourseId, updatePoint } from '~/services';
+import { SaveLogRequest } from './src/dto';
 
 dataSource
     .initialize()
@@ -192,28 +193,37 @@ io.on('connection', (socket) => {
     });
 
     // 익명 질문, 포인트 증감, 퀴즈 출제
-    socket.on('question', (data) => {
-        const userInfo = socket.request.user;
-        console.log(userInfo);
-        /** data format
-         * {
-         *     content: string,
-         *     isAnonymous: boolean
-         * }
-         */
-        console.log(data);
+    socket.on('question', async (data: SaveLogRequest, callback) => {
+        const user = socket.request.user;
+
+        try {
+            const savedLog = await saveLog(data, user.id);
+            socket.to(data.roomId).emit('newQuestion', savedLog);
+            callback('success');
+        } catch (e) {
+            callback(e);
+        }
     });
 
-    socket.on('checkQuestion', (data) => {
-        /** data format
-         * {
-         *     point: boolean // true -> plus, false -> minus
-         * }
-         */
-        console.log(data);
-    });
+    socket.on(
+        'checkQuestion',
+        async (data: { logId: number; point: boolean }, callback) => {
+            const user = socket.request.user;
 
-    socket.on('quiz', (data) => {
+            if (!user || user.userType !== 'PROFESSOR') {
+                callback('Forbidden');
+            }
+
+            try {
+                const log = await updatePoint(data);
+                callback(log);
+            } catch (e) {
+                callback(e);
+            }
+        },
+    );
+
+    socket.on('quiz', (data, callback) => {
         /** data format (객관식 형태 지원)
          * {
          *     question: string,
@@ -234,6 +244,16 @@ io.on('connection', (socket) => {
         console.log(data);
     });
 
+    socket.on('quizAnswer', (data, callback) => {
+        // const { quizId, answer } = data;
+        // quiz 데이터 및 답 찾기
+        // const quiz = getQuizById(quizId);
+        // quiz 답 맞는지 체크
+        // 유저 기록에 퀴즈 맞았는지 틀렸는지 기록
+        // const isAnswer = answer === quiz.answer;
+        // 대충 save(user, { quizId, isAnswer });
+        // callback(isAnswer);
+    });
     // 익명 질문 저장, 포인트 결과 저장, 음성 녹음 저장
 });
 

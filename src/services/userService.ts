@@ -15,3 +15,7 @@ export const join = async (dto: JoinRequest) => {
 
     return userRepository.save(user);
 };
+
+export const getUserById = (id: number) => {
+    return userRepository.findOne({ where: { id } });
+};

@@ -10,6 +10,7 @@ import {
 import { userType } from '~/config';
 import { Course } from '~/models/Course';
 import { Post } from '~/models/Post';
+import { CourseLog } from '~/models/CourseLog';
 
 @Entity({ name: 'users' })
 export class User {
@@ -63,4 +64,7 @@ export class User {
 
     @OneToMany(() => Post, (post) => post.user, { onDelete: 'CASCADE' })
     posts!: Post[];
+
+    @OneToMany(() => CourseLog, (log) => log.user)
+    logs!: CourseLog[];
 }
