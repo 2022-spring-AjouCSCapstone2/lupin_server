@@ -115,24 +115,6 @@ io.on('connection', (socket) => {
         socket.request.user,
     );
 
-    // socket.on('create-room', (room) => {
-    //     console.log(
-    //         `room ${room} was created on ${+new Date().toDateString()}`,
-    //     );
-    // });
-    //
-    // socket.on('join-room', (room, id) => {
-    //     console.log(
-    //         `socket ${id} was joined room ${room} on ${+new Date().toDateString()}`,
-    //     );
-    // });
-    //
-    // socket.on('leave-room', (room, id) => {
-    //     console.log(
-    //         `socket ${id} was leaved from room ${room} on ${+new Date().toDateString()}`,
-    //     );
-    // });
-
     socket.on('showRoom', (info) => {
         socket.emit(
             'showRoom',
@@ -200,17 +182,30 @@ io.on('connection', (socket) => {
     });
 
     // 익명 질문, 포인트 증감, 퀴즈 출제
-    socket.on('question', async (data: SaveLogRequest, callback) => {
-        const user = socket.request.user;
+    socket.on(
+        'question',
+        async (
+            data: {
+                roomId: string;
+                type: string;
+                isAnonymous: boolean;
+                content: string;
+                courseId: string;
+            },
+            callback,
+        ) => {
+            const user = socket.request.user;
 
-        try {
-            const savedLog = await saveLog(data, user.id);
+            const params = new SaveLogRequest(data);
+            const savedLog = await saveLog(params, user.id);
+            console.log(savedLog);
+            if (!savedLog) {
+                callback('Failed');
+            }
             socket.to(data.roomId).emit('newQuestion', savedLog);
             callback('success');
-        } catch (e) {
-            callback(e);
-        }
-    });
+        },
+    );
 
     socket.on(
         'checkQuestion',
@@ -221,36 +216,50 @@ io.on('connection', (socket) => {
                 callback('Forbidden');
             }
 
-            try {
-                const log = await updatePoint(data);
-                callback(log);
-            } catch (e) {
-                callback(e);
+            const log = await updatePoint(data);
+            if (!log) {
+                callback('Failed');
             }
+            callback(log);
         },
     );
 
-    socket.on('quiz', async (data: SubmitQuizRequest, callback) => {
-        const user = socket.request.user;
+    socket.on(
+        'quiz',
+        async (
+            data: {
+                roomId: string;
+                content: string;
+                list: { no: number; content: string }[];
+                answer: number;
+            },
+            callback,
+        ) => {
+            const user = socket.request.user;
 
-        if (!user || user.userType !== 'PROFESSOR') {
-            callback('Forbidden');
-        }
+            if (!user || user.userType !== 'PROFESSOR') {
+                callback('Forbidden');
+            }
 
-        try {
-            const savedQuiz = await saveQuiz(data);
+            const params = new SubmitQuizRequest(data);
+            const savedQuiz = await saveQuiz(params);
+            if (!savedQuiz) {
+                callback('Failed');
+            }
             socket.to(data.roomId).emit('quiz', savedQuiz);
             callback(savedQuiz);
-        } catch (e) {
-            callback(e);
-        }
-    });
+        },
+    );
 
     socket.on(
         'quizAnswer',
         async (data: { quizId: number; answer: number }, callback) => {
             const user = socket.request.user;
             const quiz = await getQuizById(data.quizId);
+
+            if (!user) {
+                callback('Forbidden');
+            }
 
             const isAnswer = quiz.answer.no === data.answer;
             const savedQuizLog = await saveQuizLog({

@@ -4,6 +4,7 @@ import {
     ManyToOne,
     OneToOne,
     PrimaryGeneratedColumn,
+    JoinColumn,
 } from 'typeorm';
 import { Quiz } from '~/models/Quiz';
 
@@ -22,5 +23,6 @@ export class QuizList {
     quiz!: Quiz;
 
     @OneToOne(() => Quiz, (quiz) => quiz.answer)
+    @JoinColumn()
     target!: Quiz;
 }

@@ -20,10 +20,10 @@ export class Quiz {
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
-    @OneToMany(() => QuizList, (quizList) => quizList.quiz)
+    @OneToMany(() => QuizList, (quizList) => quizList.quiz, { cascade: true })
     quizLists!: QuizList[];
 
-    @OneToOne(() => QuizList, (quizList) => quizList.target)
+    @OneToOne(() => QuizList, (quizList) => quizList.target, { cascade: true })
     answer!: QuizList;
 
     @OneToMany(() => QuizLog, (log) => log.quiz)

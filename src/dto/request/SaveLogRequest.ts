@@ -12,6 +12,20 @@ export class SaveLogRequest {
 
     courseId!: string;
 
+    constructor(data: {
+        roomId: string;
+        type: string;
+        isAnonymous: boolean;
+        content: string;
+        courseId: string;
+    }) {
+        this.roomId = data.roomId;
+        this.type = data.type;
+        this.isAnonymous = data.isAnonymous;
+        this.content = data.content;
+        this.courseId = data.courseId;
+    }
+
     public toEntity() {
         if (
             !['QUESTION', 'RECORDING', 'SCRIPT'].includes(this.type) ||
