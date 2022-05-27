@@ -1,7 +1,12 @@
-import { Post } from '~/models';
-import { postRepository } from '~/repositories/postRepository';
+import { Post, Comment } from '~/models';
 import { SavePostRequest } from '~/dto';
-import { courseRepository, userRepository } from '~/repositories';
+import {
+    courseRepository,
+    userRepository,
+    postRepository,
+    commentRepository,
+} from '~/repositories';
+import { NotFoundError } from '~/utils';
 
 export const getPostsByCourseId = (courseId: string): Promise<Post[]> => {
     return postRepository.find({
@@ -13,7 +18,7 @@ export const getPostsByCourseId = (courseId: string): Promise<Post[]> => {
 export const getPostByPostId = (postId: number): Promise<Post> => {
     return postRepository.findOne({
         where: { id: postId },
-        relations: ['user'],
+        relations: ['user', 'comments'],
     });
 };
 
@@ -24,4 +29,25 @@ export const savePost = async (body: SavePostRequest): Promise<Post> => {
     data.course = await courseRepository.findOneBy({ courseId: body.courseId });
 
     return postRepository.save(data);
+};
+
+export const saveComment = async (
+    userId: number,
+    content: string,
+    postId: number,
+): Promise<Comment> => {
+    const post = await postRepository.findOneBy({ id: postId });
+    const user = await userRepository.findOneBy({ id: userId });
+
+    if (!post) {
+        throw new NotFoundError('post not found');
+    }
+
+    const comment = new Comment();
+
+    comment.user = user;
+    comment.post = post;
+    comment.content = content;
+
+    return commentRepository.save(comment);
 };

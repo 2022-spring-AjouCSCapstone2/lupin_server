@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '~/models/Post';
+import { User } from '~/models/User';
 
 @Entity({ name: 'comments' })
 export class Comment {
@@ -11,4 +12,7 @@ export class Comment {
 
     @ManyToOne(() => Post, (post) => post.comments, { cascade: true })
     post!: Post;
+
+    @ManyToOne(() => User, (user) => user.comments)
+    user!: User;
 }
