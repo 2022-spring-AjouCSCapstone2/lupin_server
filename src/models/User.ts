@@ -1,40 +1,83 @@
-import bcrypt from 'bcrypt';
-import mongoose, { Schema, Types } from 'mongoose';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    OneToMany,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { userType } from '~/config';
+import { Course } from '~/models/Course';
+import { Post } from '~/models/Post';
+import { CourseLog } from '~/models/CourseLog';
+import { QuizLog } from '~/models/QuizLog';
+import { Comment } from '~/models/Comment';
 
-interface user {
-    name: string;
-    userType: string;
-    userId: number;
-    email: string;
-    password: string;
-    courses: Types.ObjectId;
-    meta: { phone: string };
+@Entity({ name: 'users' })
+export class User {
+    // PK
+    @PrimaryGeneratedColumn({ unsigned: true })
+    id!: number;
+
+    // 학번
+    @Column({ unsigned: true, unique: true })
+    userId!: number;
+
+    // 이름
+    @Column({ nullable: false })
+    name!: string;
+
+    // 유저 분류
+    @Column({ type: 'enum', enum: userType, default: userType.STUDENT })
+    userType!: userType;
+
+    @Column({ nullable: false, unique: true })
+    email!: string;
+
+    @Column({ nullable: false })
+    password!: string;
+
+    @Column({ default: null })
+    phone!: string;
+
+    @Column({ nullable: true })
+    path!: string;
+
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt!: Date;
+
+    @JoinTable({
+        name: 'courses_users',
+        joinColumn: {
+            name: 'user_id',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'course_id',
+            referencedColumnName: 'id',
+        },
+    })
+    @ManyToMany(() => Course, (course) => course.students)
+    courses!: Course[];
+
+    @OneToMany(() => Course, (course) => course.professor, {
+        onDelete: 'CASCADE',
+        nullable: false,
+    })
+    lectures!: Course[];
+
+    @OneToMany(() => Post, (post) => post.user, { onDelete: 'CASCADE' })
+    posts!: Post[];
+
+    @OneToMany(() => Comment, (comment) => comment.user, {
+        onDelete: 'SET NULL',
+    })
+    comments!: Comment[];
+
+    @OneToMany(() => CourseLog, (log) => log.user)
+    logs!: CourseLog[];
+
+    @OneToMany(() => QuizLog, (log) => log.user)
+    quizLogs!: QuizLog[];
 }
-
-const userSchema = new Schema<user>({
-    name: { type: String, required: true },
-    userType: { type: String, enum: ['student', 'professor'], required: true },
-    userId: { type: Number, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    courses: { type: Schema.Types.ObjectId, ref: 'Course' },
-    meta: {
-        phone: { type: String },
-    },
-});
-
-// _id: PK (index용 ID -> mongoDB가 자동 부여)
-// userType: Enum (유저 타입 (교수인지, 학생인지))
-// userId: number (학번 or 교번)
-// name: string (사람이름)
-// email: string (이메일, 로그인시 아이디로 사용)
-// password: string (로그인시 사용하는 비밀번호)
-// class: array of objectid (수강하는 과목들 -> Course DB에서 _id를 바탕으로 정보를 참조해옴)
-// meta: 부가적인 정보
-//      phone : string (전화번호)
-
-userSchema.pre('save', async function <user>() {
-    this.password = await bcrypt.hash(this.password, 5);
-});
-
-export const User = mongoose.model<user>('User', userSchema);

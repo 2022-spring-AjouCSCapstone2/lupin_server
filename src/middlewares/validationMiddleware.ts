@@ -12,7 +12,7 @@ type baseObj = {
 // isBody: target is body (else, target is params)
 export const validationMiddleware = (
     dto: baseObj,
-    isBody: Boolean = true,
+    isBody = true,
 ): RequestHandler => {
     return (req, res, next) => {
         const obj = plainToInstance(dto, isBody ? req.body : req.params);
