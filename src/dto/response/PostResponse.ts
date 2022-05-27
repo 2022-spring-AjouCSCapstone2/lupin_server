@@ -1,4 +1,4 @@
-import { Post } from '~/models';
+import { Post, Comment } from '~/models';
 
 export class PostResponse {
     id!: number;
@@ -11,11 +11,14 @@ export class PostResponse {
 
     username!: string;
 
+    comments!: Comment[];
+
     constructor(post: Post) {
         this.id = post.id;
         this.title = post.title;
         this.content = post.content;
         this.createdAt = post.createdAt;
         this.username = post.user.name;
+        this.comments = post.comments;
     }
 }

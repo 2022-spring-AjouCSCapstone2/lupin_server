@@ -122,6 +122,15 @@ io.on('connection', (socket) => {
         );
     });
 
+    socket.on('test', (info, callback) => {
+        console.log(socket.request.headers);
+        console.log(socket.request.user);
+        callback({
+            headers: socket.request.headers,
+            user: socket.request.user,
+        });
+    });
+
     socket.on('createRoom', (data: { courseId: string }, callback) => {
         const user = socket.request.user;
         const roomId = `${data.courseId}-${+new Date()}`;
