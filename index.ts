@@ -100,8 +100,6 @@ io.use(wrap(passport.session()));
 io.use((socket, next) => {
     const sess = socket.request.session;
 
-    console.log(sess);
-
     if (sess) {
         next();
     } else {

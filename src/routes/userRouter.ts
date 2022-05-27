@@ -13,7 +13,6 @@ router.post(
     validationMiddleware(LoginRequest),
     passport.authenticate('local', { failureMessage: true }),
     (req, res, next) => {
-        console.log(req.user, req.session);
         res.status(200).json(req.user);
     },
 );
