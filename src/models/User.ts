@@ -12,6 +12,7 @@ import { Course } from '~/models/Course';
 import { Post } from '~/models/Post';
 import { CourseLog } from '~/models/CourseLog';
 import { QuizLog } from '~/models/QuizLog';
+import { Comment } from '~/models/Comment';
 
 @Entity({ name: 'users' })
 export class User {
@@ -40,6 +41,9 @@ export class User {
     @Column({ default: null })
     phone!: string;
 
+    @Column({ nullable: true })
+    path!: string;
+
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
@@ -65,6 +69,11 @@ export class User {
 
     @OneToMany(() => Post, (post) => post.user, { onDelete: 'CASCADE' })
     posts!: Post[];
+
+    @OneToMany(() => Comment, (comment) => comment.user, {
+        onDelete: 'SET NULL',
+    })
+    comments!: Comment[];
 
     @OneToMany(() => CourseLog, (log) => log.user)
     logs!: CourseLog[];
