@@ -4,9 +4,9 @@ export enum userType {
 }
 
 export enum courseLogType {
-    QUESTION = 'question',
-    RECORDING = 'recording',
-    SCRIPT = 'script',
+    QUESTION = 'QUESTION',
+    RECORDING = 'RECORDING',
+    SCRIPT = 'SCRIPT',
 }
 
 export enum day {

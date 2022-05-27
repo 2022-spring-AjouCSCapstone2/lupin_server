@@ -13,6 +13,15 @@ import cors from 'cors';
 import router from '~/routes';
 import { session } from '~/middlewares';
 import { dataSource, passportConfig } from '~/config';
+import {
+    saveLog,
+    getMyCourseByCourseId,
+    updatePoint,
+    getQuizById,
+    saveQuiz,
+    saveQuizLog,
+} from '~/services';
+import { SaveLogRequest, SubmitQuizRequest } from './src/dto';
 
 dataSource
     .initialize()
@@ -28,7 +37,14 @@ const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const server = require('http').createServer(app);
 
-const io = new Server(server, { cookie: true });
+const io = new Server(server, {
+    cookie: true,
+    cors: {
+        origin: ['http://localhost:3000', '*'],
+        methods: ['GET', 'POST'],
+        credentials: true,
+    },
+});
 
 app.use(
     cors({
@@ -93,58 +109,67 @@ io.use((socket, next) => {
     }
 });
 
-// 임시 값
-const rooms = new Map();
-let newRoomId = 90000001;
-
 io.on('connection', (socket) => {
     console.log(
-        'a user connected',
-        socket.handshake.auth,
-        socket.handshake.headers,
+        `a user ${socket.request.user?.userId} connected`,
+        socket.request.user,
     );
 
     socket.on('showRoom', (info) => {
-        socket.emit('showRoom', JSON.stringify(Array.from(rooms.entries())));
+        socket.emit(
+            'showRoom',
+            JSON.stringify(Array.from(io.sockets.adapter.rooms.entries())),
+        );
     });
 
-    socket.on('createRoom', (roomData, info, callback) => {
-        console.log('createRoom', info);
-        const roomId = String(newRoomId);
-        newRoomId += 1;
-        rooms.set(roomId, roomData);
-        console.log(rooms);
+    socket.on('createRoom', (data: { courseId: string }, callback) => {
+        const user = socket.request.user;
+        const roomId = `${data.courseId}-${+new Date()}`;
+
+        if (!user || user.userType !== 'PROFESSOR') {
+            callback('Forbidden');
+        }
         socket.join(roomId);
+
         callback(roomId);
     });
 
-    socket.on('joinRoom', (info, callback) => {
-        console.log('joinRoom', info);
-        const roomId = String(info.roomId);
-        const roomData = rooms.get(roomId);
-        console.log(roomId, roomData);
+    socket.on('joinRoom', async (data: { courseId: string }, callback) => {
+        const user = socket.request.user;
+        const course = await getMyCourseByCourseId(user.id, data.courseId);
 
-        if (roomData !== undefined) {
-            socket.join(roomId);
+        if (!course) {
+            callback('Forbidden');
+        }
 
-            socket.to(roomId).emit('newStudent', socket.id);
+        const rooms = [...io.sockets.adapter.rooms.keys()];
+        const roomIdRegex = new RegExp(`${data.courseId}-[0-9]+`);
 
-            console.log(io.sockets.adapter.rooms);
-            callback({
-                sessions: [...io.sockets.adapter.rooms.get(roomId)],
-                roomData,
+        const foundRoomId = rooms.find((value) => roomIdRegex.test(value));
+        if (foundRoomId) {
+            socket.join(foundRoomId);
+
+            socket.to(foundRoomId).emit('newStudent', {
+                socketId: socket.id,
+                userId: user.userId,
             });
-            // callback([...io.sockets.adapter.rooms.get(roomId)], roomData);
+
+            callback(foundRoomId);
         } else {
-            socket.emit('noRoom', 'Wrong Room ID');
+            callback('no course session opened');
         }
     });
 
-    socket.on('leaveRoom', (roomId, info, callback) => {
-        console.log('leaveRoom', info);
-        socket.to(roomId).emit('studentLeaved', socket.id);
-        socket.leave(roomId);
-        callback();
+    socket.on('leaveRoom', (data: { roomId: string }, callback) => {
+        const user = socket.request.user;
+
+        socket.leave(data.roomId);
+
+        socket.to(data.roomId).emit('studentLeaved', {
+            socketId: socket.id,
+            userId: user.userId,
+        });
+        callback('success');
     });
 
     socket.on('message', (data) => {
@@ -152,8 +177,100 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        const user = socket.request.user;
+        console.log(`a user ${user?.userId} disconnected`);
     });
+
+    // 익명 질문, 포인트 증감, 퀴즈 출제
+    socket.on(
+        'question',
+        async (
+            data: {
+                roomId: string;
+                type: string;
+                isAnonymous: boolean;
+                content: string;
+                courseId: string;
+            },
+            callback,
+        ) => {
+            const user = socket.request.user;
+
+            const params = new SaveLogRequest(data);
+            const savedLog = await saveLog(params, user.id);
+            console.log(savedLog);
+            if (!savedLog) {
+                callback('Failed');
+            }
+            socket.to(data.roomId).emit('newQuestion', savedLog);
+            callback('success');
+        },
+    );
+
+    socket.on(
+        'checkQuestion',
+        async (data: { logId: number; point: boolean }, callback) => {
+            const user = socket.request.user;
+
+            if (!user || user.userType !== 'PROFESSOR') {
+                callback('Forbidden');
+            }
+
+            const log = await updatePoint(data);
+            if (!log) {
+                callback('Failed');
+            }
+            callback(log);
+        },
+    );
+
+    socket.on(
+        'quiz',
+        async (
+            data: {
+                roomId: string;
+                content: string;
+                list: { no: number; content: string }[];
+                answer: number;
+            },
+            callback,
+        ) => {
+            const user = socket.request.user;
+
+            if (!user || user.userType !== 'PROFESSOR') {
+                callback('Forbidden');
+            }
+
+            const params = new SubmitQuizRequest(data);
+            const savedQuiz = await saveQuiz(params);
+            if (!savedQuiz) {
+                callback('Failed');
+            }
+            socket.to(data.roomId).emit('quiz', savedQuiz);
+            callback(savedQuiz);
+        },
+    );
+
+    socket.on(
+        'quizAnswer',
+        async (data: { quizId: number; answer: number }, callback) => {
+            const user = socket.request.user;
+            const quiz = await getQuizById(data.quizId);
+
+            if (!user) {
+                callback('Forbidden');
+            }
+
+            const isAnswer = quiz.answer.no === data.answer;
+            const savedQuizLog = await saveQuizLog({
+                answer: data.answer,
+                isAnswer,
+                quizId: data.quizId,
+                userId: user.id,
+            });
+            callback(savedQuizLog.isAnswer);
+        },
+    );
 });
 
 server.listen(+process.env.PORT, () => {

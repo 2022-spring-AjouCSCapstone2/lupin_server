@@ -27,6 +27,11 @@ declare namespace NodeJS {
 declare module 'http' {
     interface IncomingMessage {
         session: Session;
+        user: {
+            id: number;
+            userId: number;
+            userType: string;
+        };
     }
 }
 
