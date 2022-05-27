@@ -136,6 +136,13 @@ io.on('connection', (socket) => {
         if (!user || user.userType !== 'PROFESSOR') {
             callback('Forbidden');
         }
+        const roomIdRegex = new RegExp(`${data.courseId}-[0-9]+`);
+        const isExist = [...io.sockets.adapter.rooms.keys()].find((value) =>
+            roomIdRegex.test(value),
+        );
+        if (isExist) {
+            callback('Room already exists');
+        }
         socket.join(roomId);
 
         callback(roomId);
@@ -170,6 +177,9 @@ io.on('connection', (socket) => {
     socket.on('leaveRoom', (data: { roomId: string }, callback) => {
         const user = socket.request.user;
 
+        if (user.userType === 'PROFESSOR') {
+            io.sockets.socketsLeave(data.roomId);
+        }
         socket.leave(data.roomId);
 
         socket.to(data.roomId).emit('studentLeaved', {
