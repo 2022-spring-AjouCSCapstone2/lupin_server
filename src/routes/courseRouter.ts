@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import * as courseService from '~/services/courseService';
 import * as courseLogService from '~/services/courseLogService';
 import { isLoggedIn } from '~/middlewares';
@@ -37,16 +37,26 @@ router.get('/today', isLoggedIn, (req, res, next) => {
         .catch(next);
 });
 
-router.get('/:courseId/logs', isLoggedIn, (req, res, next) => {
-    const { courseId } = req.params;
+router.get(
+    '/:courseId/logs',
+    isLoggedIn,
+    (
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        req: Request<{ courseId: string }, {}, {}, { day: string }>,
+        res,
+        next,
+    ) => {
+        const { courseId } = req.params;
+        const { day } = req.query;
 
-    courseLogService
-        .getLogsByCourseId(courseId)
-        .then((data) => {
-            res.json(data);
-        })
-        .catch(next);
-});
+        courseLogService
+            .getLogsByCourseId(courseId, day)
+            .then((data) => {
+                res.json(data);
+            })
+            .catch(next);
+    },
+);
 
 router.get('/:courseId', (req, res, next) => {
     // 특정 수업 정보 조회 (수강번호 기준 X123)
