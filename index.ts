@@ -121,8 +121,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('test', (info, callback) => {
-        console.log(socket.request.headers);
-        console.log(socket.request.user);
+        console.log(`current user : ${socket.request.user}`);
+        console.log(`current rooms : ${io.sockets.adapter.rooms.entries()}`);
+
         callback({
             headers: socket.request.headers,
             user: socket.request.user,
@@ -133,9 +134,14 @@ io.on('connection', (socket) => {
         const user = socket.request.user;
         const roomId = `${data.courseId}-${+new Date()}`;
 
-        if (!user || user.userType !== 'PROFESSOR') {
+        if (!user || user.userType !== 'PROFESSOR' || !data.courseId) {
             callback('Forbidden');
         }
+
+        console.log(
+            `${user.userId} requested createRoom, on course ${data.courseId}`,
+        );
+
         const roomIdRegex = new RegExp(`${data.courseId}-[0-9]+`);
         const isExist = [...io.sockets.adapter.rooms.keys()].find((value) =>
             roomIdRegex.test(value),
@@ -150,6 +156,13 @@ io.on('connection', (socket) => {
 
     socket.on('joinRoom', async (data: { courseId: string }, callback) => {
         const user = socket.request.user;
+
+        if (!data.courseId) {
+            callback('Wrong data format');
+        }
+
+        console.log(`${user.userId} requested joinRoom, on ${data.courseId}`);
+
         const course = await getMyCourseByCourseId(user.id, data.courseId);
 
         if (!course) {
@@ -176,6 +189,14 @@ io.on('connection', (socket) => {
 
     socket.on('leaveRoom', (data: { roomId: string }, callback) => {
         const user = socket.request.user;
+
+        if (!data.roomId) {
+            callback('Wrong data format');
+        }
+
+        console.log(
+            `${user.userType} ${user.userId} requested leaveRoom, on room ${data.roomId}`,
+        );
 
         if (user.userType === 'PROFESSOR') {
             io.socketsLeave(data.roomId);
@@ -214,9 +235,22 @@ io.on('connection', (socket) => {
         ) => {
             const user = socket.request.user;
 
+            if (
+                !data.roomId ||
+                !data.type ||
+                !data.isAnonymous ||
+                !data.content ||
+                !data.courseId
+            ) {
+                callback('Wrong data format');
+            }
+
+            console.log(
+                `${user.userId} requested question on ${data.courseId}, isAnonymous : ${data.isAnonymous}, content : ${data.content}`,
+            );
+
             const params = new SaveLogRequest(data);
             const savedLog = await saveLog(params, user.id);
-            console.log(savedLog);
             if (!savedLog) {
                 callback('Failed');
             }
@@ -230,9 +264,21 @@ io.on('connection', (socket) => {
         async (data: { logId: number; point: boolean }, callback) => {
             const user = socket.request.user;
 
-            if (!user || user.userType !== 'PROFESSOR') {
+            if (
+                !user ||
+                user.userType !== 'PROFESSOR' ||
+                !data.logId ||
+                data.point === undefined ||
+                null
+            ) {
                 callback('Forbidden');
             }
+
+            console.log(
+                `${user.userType} ${user.userId} requested check for question ${
+                    data.logId
+                }, with point ${data.point ? 1 : -1}`,
+            );
 
             const log = await updatePoint(data);
             if (!log) {
@@ -255,9 +301,22 @@ io.on('connection', (socket) => {
         ) => {
             const user = socket.request.user;
 
+            if (
+                !data.roomId ||
+                !data.content ||
+                !data.list.length ||
+                !data.answer
+            ) {
+                callback('Wrong data format');
+            }
+
             if (!user || user.userType !== 'PROFESSOR') {
                 callback('Forbidden');
             }
+
+            console.log(
+                `${user.userType} ${user.userId} requested quiz, content : ${data.content}, list : ${data.list}, answer : ${data.answer}`,
+            );
 
             const params = new SubmitQuizRequest(data);
             const savedQuiz = await saveQuiz(params);
@@ -279,7 +338,18 @@ io.on('connection', (socket) => {
                 callback('Forbidden');
             }
 
+            if (!data.quizId || !data.answer) {
+                callback('Wrong data format');
+            }
+
             const isAnswer = quiz.answer.no === data.answer;
+
+            console.log(
+                `${user.userId} answered quiz ${data.quizId}, with answer ${
+                    data.answer
+                }. correct : ${isAnswer ? 'O' : 'X'}`,
+            );
+
             const savedQuizLog = await saveQuizLog({
                 answer: data.answer,
                 isAnswer,
