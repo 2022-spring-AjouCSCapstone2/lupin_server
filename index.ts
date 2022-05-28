@@ -22,6 +22,7 @@ import {
     saveQuizLog,
 } from '~/services';
 import { SaveLogRequest, SubmitQuizRequest } from './src/dto';
+import { updateStatistics } from './src/services/statisticsService';
 
 dataSource
     .initialize()
@@ -355,6 +356,9 @@ io.on('connection', (socket) => {
                 isAnswer,
                 quizId: data.quizId,
                 userId: user.id,
+            });
+            await updateStatistics(quiz.course.courseId, user.userId, {
+                quizScore: isAnswer ? 1 : 0,
             });
             callback({
                 status: 'success',

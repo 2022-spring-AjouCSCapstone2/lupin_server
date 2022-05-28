@@ -1,6 +1,7 @@
 import { Request, Router } from 'express';
 import * as courseService from '~/services/courseService';
 import * as courseLogService from '~/services/courseLogService';
+import * as statisticsService from '~/services/statisticsService';
 import { isLoggedIn } from '~/middlewares';
 
 const router = Router();
@@ -57,6 +58,35 @@ router.get(
             .catch(next);
     },
 );
+
+router.get('/:courseId/statistics', isLoggedIn, (req, res, next) => {
+    const { userId } = req.user;
+    const { courseId } = req.params;
+
+    statisticsService
+        .getStatisticsByCourseId(courseId, userId)
+        .then((data) => {
+            const averageMidtermScore =
+                data.reduce((prev, curr) => {
+                    return prev + curr.midtermExamScore;
+                }, 0) / data.length;
+            const averageFinalScore =
+                data.reduce((prev, curr) => {
+                    return prev + curr.finalExamScore;
+                }, 0) / data.length;
+            const averageQuizScore =
+                data.reduce((prev, curr) => {
+                    return prev + curr.quizScore;
+                }, 0) / data.length;
+            res.json({
+                averageMidtermScore,
+                averageFinalScore,
+                averageQuizScore,
+                data,
+            });
+        })
+        .catch(next);
+});
 
 router.get('/:courseId', (req, res, next) => {
     // 특정 수업 정보 조회 (수강번호 기준 X123)

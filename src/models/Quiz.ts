@@ -2,12 +2,14 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    ManyToOne,
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { QuizList } from '~/models/QuizList';
 import { QuizLog } from '~/models/QuizLog';
+import { Course } from '~/models/Course';
 
 @Entity({ name: 'quiz' })
 export class Quiz {
@@ -28,4 +30,7 @@ export class Quiz {
 
     @OneToMany(() => QuizLog, (log) => log.quiz)
     quizLogs!: QuizLog[];
+
+    @ManyToOne(() => Course, (course) => course.quiz)
+    course!: Course;
 }

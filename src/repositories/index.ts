@@ -5,3 +5,4 @@ export * from './courseLogRepository';
 export * from './postRepository';
 export * from './quizRepository';
 export * from './quizLogRepository';
+export * from './statisticsRepository';
