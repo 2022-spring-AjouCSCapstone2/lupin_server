@@ -19,3 +19,8 @@ export enum day {
     SUNDAY = 'sun',
     NODAY = 'nod', // 파란학기 시간표같은 경우 날짜가 정해져 있지 않음
 }
+
+export enum postType {
+    NOTICE = 'NOTICE',
+    FREE = 'FREE',
+}
