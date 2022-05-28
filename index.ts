@@ -178,14 +178,15 @@ io.on('connection', (socket) => {
         const user = socket.request.user;
 
         if (user.userType === 'PROFESSOR') {
-            io.sockets.socketsLeave(data.roomId);
-        }
-        socket.leave(data.roomId);
+            io.socketsLeave(data.roomId);
+        } else {
+            socket.leave(data.roomId);
 
-        socket.to(data.roomId).emit('studentLeaved', {
-            socketId: socket.id,
-            userId: user.userId,
-        });
+            socket.to(data.roomId).emit('studentLeaved', {
+                socketId: socket.id,
+                userId: user.userId,
+            });
+        }
         callback('success');
     });
 
