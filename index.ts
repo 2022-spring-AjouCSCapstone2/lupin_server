@@ -135,7 +135,7 @@ io.on('connection', (socket) => {
         const roomId = `${data.courseId}-${+new Date()}`;
 
         if (!user || user.userType !== 'PROFESSOR' || !data.courseId) {
-            callback('Forbidden');
+            callback({ status: 'failed', data: 'Forbidden' });
         }
 
         console.log(
@@ -147,18 +147,18 @@ io.on('connection', (socket) => {
             roomIdRegex.test(value),
         );
         if (isExist) {
-            callback('Room already exists');
+            callback({ status: 'failed', data: 'Room already exists' });
         }
         socket.join(roomId);
 
-        callback(roomId);
+        callback({ status: 'success', data: roomId });
     });
 
     socket.on('joinRoom', async (data: { courseId: string }, callback) => {
         const user = socket.request.user;
 
         if (!data.courseId) {
-            callback('Wrong data format');
+            callback({ status: 'failed', data: 'Wrong data format' });
         }
 
         console.log(`${user.userId} requested joinRoom, on ${data.courseId}`);
@@ -166,7 +166,7 @@ io.on('connection', (socket) => {
         const course = await getMyCourseByCourseId(user.id, data.courseId);
 
         if (!course) {
-            callback('Forbidden');
+            callback({ status: 'failed', data: 'Forbidden' });
         }
 
         const rooms = [...io.sockets.adapter.rooms.keys()];
@@ -181,9 +181,9 @@ io.on('connection', (socket) => {
                 userId: user.userId,
             });
 
-            callback(foundRoomId);
+            callback({ status: 'success', data: foundRoomId });
         } else {
-            callback('no course session opened');
+            callback({ status: 'failed', data: 'no course session opened' });
         }
     });
 
@@ -191,7 +191,7 @@ io.on('connection', (socket) => {
         const user = socket.request.user;
 
         if (!data.roomId) {
-            callback('Wrong data format');
+            callback({ status: 'failed', data: 'Wrong data format' });
         }
 
         console.log(
@@ -208,7 +208,7 @@ io.on('connection', (socket) => {
                 userId: user.userId,
             });
         }
-        callback('success');
+        callback({ status: 'success' });
     });
 
     socket.on('message', (data) => {
@@ -242,7 +242,7 @@ io.on('connection', (socket) => {
                 !data.content ||
                 !data.courseId
             ) {
-                callback('Wrong data format');
+                callback({ status: 'failed', data: 'Wrong data format' });
             }
 
             console.log(
@@ -252,10 +252,10 @@ io.on('connection', (socket) => {
             const params = new SaveLogRequest(data);
             const savedLog = await saveLog(params, user.id);
             if (!savedLog) {
-                callback('Failed');
+                callback({ status: 'failed', data: 'Failed to save question' });
             }
             socket.to(data.roomId).emit('newQuestion', savedLog);
-            callback('success');
+            callback({ status: 'success' });
         },
     );
 
@@ -271,7 +271,7 @@ io.on('connection', (socket) => {
                 data.point === undefined ||
                 null
             ) {
-                callback('Forbidden');
+                callback({ status: 'failed', data: 'Forbidden' });
             }
 
             console.log(
@@ -282,9 +282,9 @@ io.on('connection', (socket) => {
 
             const log = await updatePoint(data);
             if (!log) {
-                callback('Failed');
+                callback({ status: 'failed', data: 'Failed to update point' });
             }
-            callback(log);
+            callback({ status: 'success', data: log });
         },
     );
 
@@ -307,11 +307,11 @@ io.on('connection', (socket) => {
                 !data.list.length ||
                 !data.answer
             ) {
-                callback('Wrong data format');
+                callback({ status: 'failed', data: 'Wrong data format' });
             }
 
             if (!user || user.userType !== 'PROFESSOR') {
-                callback('Forbidden');
+                callback({ status: 'failed', data: 'Forbidden' });
             }
 
             console.log(
@@ -321,10 +321,10 @@ io.on('connection', (socket) => {
             const params = new SubmitQuizRequest(data);
             const savedQuiz = await saveQuiz(params);
             if (!savedQuiz) {
-                callback('Failed');
+                callback({ status: 'failed', data: 'Failed to save quiz' });
             }
             socket.to(data.roomId).emit('quiz', savedQuiz);
-            callback(savedQuiz);
+            callback({ status: 'success', data: savedQuiz });
         },
     );
 
@@ -335,11 +335,11 @@ io.on('connection', (socket) => {
             const quiz = await getQuizById(data.quizId);
 
             if (!user) {
-                callback('Forbidden');
+                callback({ status: 'failed', data: 'Forbidden' });
             }
 
             if (!data.quizId || !data.answer) {
-                callback('Wrong data format');
+                callback({ status: 'failed', data: 'Wrong data format' });
             }
 
             const isAnswer = quiz.answer.no === data.answer;
@@ -356,7 +356,10 @@ io.on('connection', (socket) => {
                 quizId: data.quizId,
                 userId: user.id,
             });
-            callback(savedQuizLog.isAnswer);
+            callback({
+                status: 'success',
+                data: savedQuizLog.isAnswer ? 'O' : 'X',
+            });
         },
     );
 });
