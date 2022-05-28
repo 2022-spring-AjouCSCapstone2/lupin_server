@@ -28,6 +28,13 @@ export const getLogById = (id: number) => {
     return courseLogRepository.findOne({ where: { id } });
 };
 
+export const getLogsByCourseId = (courseId: string) => {
+    return courseLogRepository.find({
+        where: { course: { courseId } },
+        relations: ['course'],
+    });
+};
+
 export const updatePoint = async (data: { logId: number; point: boolean }) => {
     const log = await courseLogRepository.findOne({
         where: { id: data.logId },

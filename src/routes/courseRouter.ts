@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as courseService from '~/services/courseService';
+import * as courseLogService from '~/services/courseLogService';
 import { isLoggedIn } from '~/middlewares';
 
 const router = Router();
@@ -12,7 +13,7 @@ router.get('/', isLoggedIn, (req, res, next) => {
         .then((data) => {
             res.json(data);
         })
-        .catch((err) => next());
+        .catch(next);
 });
 
 router.get('/all', (req, res, next) => {
@@ -22,7 +23,7 @@ router.get('/all', (req, res, next) => {
         .then((data) => {
             res.json(data);
         })
-        .catch((err) => next());
+        .catch(next);
 });
 
 router.get('/today', isLoggedIn, (req, res, next) => {
@@ -30,6 +31,17 @@ router.get('/today', isLoggedIn, (req, res, next) => {
     const { id } = req.user;
     courseService
         .getTodayCourses(id)
+        .then((data) => {
+            res.json(data);
+        })
+        .catch(next);
+});
+
+router.get('/:courseId/logs', isLoggedIn, (req, res, next) => {
+    const { courseId } = req.params;
+
+    courseLogService
+        .getLogsByCourseId(courseId)
         .then((data) => {
             res.json(data);
         })
@@ -44,7 +56,7 @@ router.get('/:courseId', (req, res, next) => {
         .then((data) => {
             res.json(data);
         })
-        .catch((err) => next());
+        .catch(next);
 });
 
 export default router;
