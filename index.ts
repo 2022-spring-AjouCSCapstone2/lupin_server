@@ -41,7 +41,12 @@ const server = require('http').createServer(app);
 const io = new Server(server, {
     cookie: true,
     cors: {
-        origin: ['http://localhost:3000', '*'],
+        origin: [
+            'http://localhost:3000',
+            'http://10.0.4.39:3000',
+            'http://3.34.161.32:3000',
+            '*',
+        ],
         methods: ['GET', 'POST'],
         credentials: true,
     },
@@ -49,7 +54,12 @@ const io = new Server(server, {
 
 app.use(
     cors({
-        origin: ['http://localhost:3000', '*'],
+        origin: [
+            'http://localhost:3000',
+            'http://10.0.4.39:3000',
+            'http://3.34.161.32:3000',
+            '*',
+        ],
         credentials: true,
     }),
 );
