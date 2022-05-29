@@ -31,20 +31,26 @@ export const getLogById = (id: number) => {
     return courseLogRepository.findOne({ where: { id } });
 };
 
-export const getLogsByCourseId = (courseId: string, day?: string) => {
+export const getLogsByCourseId = (
+    courseId: string,
+    params?: { day?: string; type?: string },
+) => {
     const query = courseLogRepository
         .createQueryBuilder('log')
         .leftJoinAndSelect('log.course', 'course')
         .where('course.course_id = :courseId', { courseId });
-    if (day) {
-        const y = +day.substring(0, 4);
-        const m = +day.substring(4, 6);
-        const d = +day.substring(6, 8);
+    if (params.day) {
+        const y = +params.day.substring(0, 4);
+        const m = +params.day.substring(4, 6);
+        const d = +params.day.substring(6, 8);
         console.log(y, m, d);
         const start = new Date(y, m - 1, d);
         const end = new Date(y, m - 1, d + 1);
         query.andWhere('log.created_at >= :start', { start });
         query.andWhere('log.created_at <= :end', { end });
+    }
+    if (params.type) {
+        query.andWhere('log.type = :type', { type: params.type });
     }
     return query.getMany();
 };

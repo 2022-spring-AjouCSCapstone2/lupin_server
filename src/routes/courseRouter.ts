@@ -44,15 +44,19 @@ router.get(
     isLoggedIn,
     (
         // eslint-disable-next-line @typescript-eslint/ban-types
-        req: Request<{ courseId: string }, {}, {}, { day: string }>,
+        req: Request<
+            { courseId: string },
+            unknown,
+            unknown,
+            { day: string; type: string }
+        >,
         res,
         next,
     ) => {
         const { courseId } = req.params;
-        const { day } = req.query;
 
         courseLogService
-            .getLogsByCourseId(courseId, day)
+            .getLogsByCourseId(courseId, req.query)
             .then((data) => {
                 res.json(data);
             })
