@@ -3,6 +3,8 @@ import * as courseService from '~/services/courseService';
 import * as courseLogService from '~/services/courseLogService';
 import * as statisticsService from '~/services/statisticsService';
 import { isLoggedIn } from '~/middlewares';
+import { uploaderMiddleware } from '~/middlewares/uploaderMiddleware';
+import { BadRequestError, createInstance } from '~/utils';
 
 const router = Router();
 
@@ -98,5 +100,35 @@ router.get('/:courseId', (req, res, next) => {
         })
         .catch(next);
 });
+
+router.post(
+    '/:courseId/logs',
+    isLoggedIn,
+    uploaderMiddleware.single('audio'),
+    (req, res, next) => {
+        const { courseId } = req.params;
+
+        const { location } = req.file;
+
+        courseLogService
+            .saveRecording(location, courseId)
+            .then((data) => {
+                res.json(data);
+            })
+            .catch(next);
+        // const instance = createInstance();
+        //
+        // instance.post('/receive', { audio: file }).then((response) => {
+        //     if (
+        //         !response.data.file_name ||
+        //         !response.data.STT_text ||
+        //         !response.data.Sum_text
+        //     ) {
+        //         throw new BadRequestError('Failed to get log');
+        //     }
+        // });
+        //
+    },
+);
 
 export default router;

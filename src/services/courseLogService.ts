@@ -2,6 +2,9 @@ import { courseLogRepository } from '~/repositories';
 import { SaveLogRequest } from '~/dto';
 import { getUserById } from '~/services/userService';
 import { getCourseByCourseId } from '~/services/courseService';
+import { CourseLog } from '~/models';
+import { NotFoundError } from '~/utils';
+import { courseLogType } from '~/config';
 
 export const saveLog = async (data: SaveLogRequest, userId: number) => {
     const entity = data.toEntity();
@@ -51,6 +54,20 @@ export const updatePoint = async (data: { logId: number; point: boolean }) => {
         where: { id: data.logId },
     });
     log.point = data.point;
+
+    return courseLogRepository.save(log);
+};
+
+export const saveRecording = async (savedPath: string, courseId: string) => {
+    const log = new CourseLog();
+    const course = await getCourseByCourseId(courseId);
+
+    if (!course) {
+        throw new NotFoundError('course not found');
+    }
+    log.course = course;
+    log.type = courseLogType.RECORDING;
+    log.recordKey = savedPath;
 
     return courseLogRepository.save(log);
 };

@@ -21,6 +21,8 @@ declare namespace NodeJS {
         AWS_S3_ACCESS_KEY: string;
         AWS_S3_SECRET_KEY: string;
         AWS_S3_BUCKET: string;
+
+        AI_SERVER_HOST: string;
     }
 }
 
