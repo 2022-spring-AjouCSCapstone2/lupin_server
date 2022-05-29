@@ -30,9 +30,9 @@ router.get('/all', (req, res, next) => {
 
 router.get('/today', isLoggedIn, (req, res, next) => {
     // 오늘 수강하는 수업 목록 조회
-    const { id } = req.user;
+    const { id, userType } = req.user;
     courseService
-        .getTodayCourses(id)
+        .getTodayCourses(id, userType)
         .then((data) => {
             res.json(data);
         })

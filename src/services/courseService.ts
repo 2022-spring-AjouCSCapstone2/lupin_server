@@ -47,7 +47,7 @@ export const getCourseByCourseId = (courseId: string) => {
     });
 };
 
-export const getTodayCourses = (id: number) => {
+export const getTodayCourses = (id: number, type: string) => {
     const today = new Date().getDay();
     let dayParam;
     switch (today) {
@@ -75,6 +75,13 @@ export const getTodayCourses = (id: number) => {
         default:
             dayParam = 'NODAY';
             break;
+    }
+
+    if (type === 'PROFESSOR') {
+        return courseRepository.find({
+            where: { professor: { id }, timetables: { day: day[dayParam] } },
+            relations: ['professor', 'timetables'],
+        });
     }
     return courseRepository.find({
         where: { students: { id }, timetables: { day: day[dayParam] } },
