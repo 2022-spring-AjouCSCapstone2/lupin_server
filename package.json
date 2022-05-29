@@ -19,6 +19,7 @@
     "homepage": "https://github.com/2022-spring-AjouCSCapstone2/lupin_server#readme",
     "dependencies": {
         "aws-sdk": "^2.1143.0",
+        "axios": "^0.27.2",
         "bcrypt": "^5.0.1",
         "body-parser": "^1.19.2",
         "class-transformer": "^0.5.1",

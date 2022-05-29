@@ -29,6 +29,9 @@ export class CourseLog {
     @Column({ nullable: true })
     content!: string;
 
+    @Column({ nullable: true })
+    summary!: string;
+
     @Column({ default: true })
     isAnonymous!: boolean;
 

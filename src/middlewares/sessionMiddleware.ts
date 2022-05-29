@@ -31,5 +31,6 @@ export const session = expressSession({
     secret: REDIS_SECRET,
     cookie: {
         secure: false,
+        maxAge: 3600000 * 24,
     },
 });

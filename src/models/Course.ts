@@ -10,6 +10,7 @@ import { User } from '~/models/User';
 import { CourseLog } from '~/models/CourseLog';
 import { Post } from '~/models/Post';
 import { Timetable } from '~/models/Timetable';
+import { Quiz } from '~/models/Quiz';
 
 @Entity({ name: 'courses' })
 export class Course {
@@ -46,4 +47,7 @@ export class Course {
         onDelete: 'CASCADE',
     })
     timetables: Timetable[];
+
+    @OneToMany(() => Quiz, (quiz) => quiz.course, { cascade: true })
+    quiz!: Quiz[];
 }

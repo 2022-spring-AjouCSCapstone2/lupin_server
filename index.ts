@@ -22,6 +22,7 @@ import {
     saveQuizLog,
 } from '~/services';
 import { SaveLogRequest, SubmitQuizRequest } from './src/dto';
+import { updateStatistics } from './src/services/statisticsService';
 
 dataSource
     .initialize()
@@ -100,8 +101,6 @@ io.use(wrap(passport.session()));
 io.use((socket, next) => {
     const sess = socket.request.session;
 
-    console.log(sess);
-
     if (sess) {
         next();
     } else {
@@ -122,24 +121,53 @@ io.on('connection', (socket) => {
         );
     });
 
+    socket.on('test', (info, callback) => {
+        console.log(`current user : ${socket.request.user}`);
+        console.log(`current rooms : ${io.sockets.adapter.rooms.entries()}`);
+
+        callback({
+            headers: socket.request.headers,
+            user: socket.request.user,
+        });
+    });
+
     socket.on('createRoom', (data: { courseId: string }, callback) => {
         const user = socket.request.user;
         const roomId = `${data.courseId}-${+new Date()}`;
 
-        if (!user || user.userType !== 'PROFESSOR') {
-            callback('Forbidden');
+        if (!user || user.userType !== 'PROFESSOR' || !data.courseId) {
+            callback({ status: 'failed', data: 'Forbidden' });
+        }
+
+        console.log(
+            `${user.userId} requested createRoom, on course ${data.courseId}`,
+        );
+
+        const roomIdRegex = new RegExp(`${data.courseId}-[0-9]+`);
+        const isExist = [...io.sockets.adapter.rooms.keys()].find((value) =>
+            roomIdRegex.test(value),
+        );
+        if (isExist) {
+            callback({ status: 'failed', data: 'Room already exists' });
         }
         socket.join(roomId);
 
-        callback(roomId);
+        callback({ status: 'success', data: roomId });
     });
 
     socket.on('joinRoom', async (data: { courseId: string }, callback) => {
         const user = socket.request.user;
+
+        if (!data.courseId) {
+            callback({ status: 'failed', data: 'Wrong data format' });
+        }
+
+        console.log(`${user.userId} requested joinRoom, on ${data.courseId}`);
+
         const course = await getMyCourseByCourseId(user.id, data.courseId);
 
         if (!course) {
-            callback('Forbidden');
+            callback({ status: 'failed', data: 'Forbidden' });
         }
 
         const rooms = [...io.sockets.adapter.rooms.keys()];
@@ -154,22 +182,34 @@ io.on('connection', (socket) => {
                 userId: user.userId,
             });
 
-            callback(foundRoomId);
+            callback({ status: 'success', data: foundRoomId });
         } else {
-            callback('no course session opened');
+            callback({ status: 'failed', data: 'no course session opened' });
         }
     });
 
     socket.on('leaveRoom', (data: { roomId: string }, callback) => {
         const user = socket.request.user;
 
-        socket.leave(data.roomId);
+        if (!data.roomId) {
+            callback({ status: 'failed', data: 'Wrong data format' });
+        }
 
-        socket.to(data.roomId).emit('studentLeaved', {
-            socketId: socket.id,
-            userId: user.userId,
-        });
-        callback('success');
+        console.log(
+            `${user.userType} ${user.userId} requested leaveRoom, on room ${data.roomId}`,
+        );
+
+        if (user.userType === 'PROFESSOR') {
+            io.socketsLeave(data.roomId);
+        } else {
+            socket.leave(data.roomId);
+
+            socket.to(data.roomId).emit('studentLeaved', {
+                socketId: socket.id,
+                userId: user.userId,
+            });
+        }
+        callback({ status: 'success' });
     });
 
     socket.on('message', (data) => {
@@ -196,14 +236,27 @@ io.on('connection', (socket) => {
         ) => {
             const user = socket.request.user;
 
+            if (
+                !data.roomId ||
+                !data.type ||
+                !data.isAnonymous ||
+                !data.content ||
+                !data.courseId
+            ) {
+                callback({ status: 'failed', data: 'Wrong data format' });
+            }
+
+            console.log(
+                `${user.userId} requested question on ${data.courseId}, isAnonymous : ${data.isAnonymous}, content : ${data.content}`,
+            );
+
             const params = new SaveLogRequest(data);
             const savedLog = await saveLog(params, user.id);
-            console.log(savedLog);
             if (!savedLog) {
-                callback('Failed');
+                callback({ status: 'failed', data: 'Failed to save question' });
             }
             socket.to(data.roomId).emit('newQuestion', savedLog);
-            callback('success');
+            callback({ status: 'success' });
         },
     );
 
@@ -212,15 +265,27 @@ io.on('connection', (socket) => {
         async (data: { logId: number; point: boolean }, callback) => {
             const user = socket.request.user;
 
-            if (!user || user.userType !== 'PROFESSOR') {
-                callback('Forbidden');
+            if (
+                !user ||
+                user.userType !== 'PROFESSOR' ||
+                !data.logId ||
+                data.point === undefined ||
+                null
+            ) {
+                callback({ status: 'failed', data: 'Forbidden' });
             }
+
+            console.log(
+                `${user.userType} ${user.userId} requested check for question ${
+                    data.logId
+                }, with point ${data.point ? 1 : -1}`,
+            );
 
             const log = await updatePoint(data);
             if (!log) {
-                callback('Failed');
+                callback({ status: 'failed', data: 'Failed to update point' });
             }
-            callback(log);
+            callback({ status: 'success', data: log });
         },
     );
 
@@ -237,17 +302,30 @@ io.on('connection', (socket) => {
         ) => {
             const user = socket.request.user;
 
-            if (!user || user.userType !== 'PROFESSOR') {
-                callback('Forbidden');
+            if (
+                !data.roomId ||
+                !data.content ||
+                !data.list.length ||
+                !data.answer
+            ) {
+                callback({ status: 'failed', data: 'Wrong data format' });
             }
+
+            if (!user || user.userType !== 'PROFESSOR') {
+                callback({ status: 'failed', data: 'Forbidden' });
+            }
+
+            console.log(
+                `${user.userType} ${user.userId} requested quiz, content : ${data.content}, list : ${data.list}, answer : ${data.answer}`,
+            );
 
             const params = new SubmitQuizRequest(data);
             const savedQuiz = await saveQuiz(params);
             if (!savedQuiz) {
-                callback('Failed');
+                callback({ status: 'failed', data: 'Failed to save quiz' });
             }
             socket.to(data.roomId).emit('quiz', savedQuiz);
-            callback(savedQuiz);
+            callback({ status: 'success', data: savedQuiz });
         },
     );
 
@@ -258,17 +336,34 @@ io.on('connection', (socket) => {
             const quiz = await getQuizById(data.quizId);
 
             if (!user) {
-                callback('Forbidden');
+                callback({ status: 'failed', data: 'Forbidden' });
+            }
+
+            if (!data.quizId || !data.answer) {
+                callback({ status: 'failed', data: 'Wrong data format' });
             }
 
             const isAnswer = quiz.answer.no === data.answer;
+
+            console.log(
+                `${user.userId} answered quiz ${data.quizId}, with answer ${
+                    data.answer
+                }. correct : ${isAnswer ? 'O' : 'X'}`,
+            );
+
             const savedQuizLog = await saveQuizLog({
                 answer: data.answer,
                 isAnswer,
                 quizId: data.quizId,
                 userId: user.id,
             });
-            callback(savedQuizLog.isAnswer);
+            await updateStatistics(quiz.course.courseId, user.userId, {
+                quizScore: isAnswer ? 1 : 0,
+            });
+            callback({
+                status: 'success',
+                data: savedQuizLog.isAnswer ? 'O' : 'X',
+            });
         },
     );
 });

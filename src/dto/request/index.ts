@@ -5,3 +5,5 @@ export * from './SavePostRequest';
 export * from './SaveLogRequest';
 export * from './SubmitQuizRequest';
 export * from './UpdatePasswordRequest';
+export * from './GetPostQuery';
+export * from './UpdateStatisticsRequest';

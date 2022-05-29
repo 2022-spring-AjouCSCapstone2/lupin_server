@@ -9,11 +9,15 @@ import {
 import { Course } from '~/models/Course';
 import { User } from '~/models/User';
 import { Comment } from '~/models/Comment';
+import { postType } from '~/config';
 
 @Entity({ name: 'posts' })
 export class Post {
     @PrimaryGeneratedColumn({ unsigned: true })
     id!: number;
+
+    @Column({ type: 'enum', enum: postType, default: postType.FREE })
+    type!: postType;
 
     @Column({ nullable: false })
     title!: string;
