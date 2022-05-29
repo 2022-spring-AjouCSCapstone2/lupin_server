@@ -32,5 +32,6 @@ export const session = expressSession({
     cookie: {
         secure: false,
         maxAge: 3600000 * 24,
+        sameSite: 'none',
     },
 });

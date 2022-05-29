@@ -9,9 +9,9 @@ const router = Router();
 
 router.get('/', isLoggedIn, (req, res, next) => {
     // 자신이 듣는 수업 목록 조회
-    const { id } = req.user;
+    const { id, userType } = req.user;
     courseService
-        .getMyCourses(id)
+        .getMyCourses(id, userType)
         .then((data) => {
             res.json(data);
         })

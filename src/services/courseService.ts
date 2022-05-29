@@ -1,5 +1,5 @@
 import { courseRepository } from '~/repositories';
-import { day } from '~/config';
+import { day, userType } from '~/config';
 
 export const getCourses = () => {
     return courseRepository.find({
@@ -7,7 +7,15 @@ export const getCourses = () => {
     });
 };
 
-export const getMyCourses = (id: number) => {
+export const getMyCourses = (id: number, type: string) => {
+    if (type === userType.PROFESSOR) {
+        return courseRepository.find({
+            where: {
+                professor: { id },
+            },
+            relations: ['professor', 'timetables'],
+        });
+    }
     return courseRepository.find({
         where: {
             students: {
