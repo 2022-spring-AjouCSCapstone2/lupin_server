@@ -3,7 +3,7 @@ import { SaveLogRequest } from '~/dto';
 import { getUserById } from '~/services/userService';
 import { getCourseByCourseId } from '~/services/courseService';
 import { CourseLog } from '~/models';
-import { NotFoundError } from '~/utils';
+import { NotFoundError, createInstance, BadRequestError } from '~/utils';
 import { courseLogType } from '~/config';
 
 export const saveLog = async (data: SaveLogRequest, userId: number) => {
@@ -58,16 +58,57 @@ export const updatePoint = async (data: { logId: number; point: boolean }) => {
     return courseLogRepository.save(log);
 };
 
-export const saveRecording = async (savedPath: string, courseId: string) => {
-    const log = new CourseLog();
+export const saveRecording = async (
+    savedPath: string,
+    audio: Express.Multer.File,
+    courseId: string,
+) => {
+    const recordLog = new CourseLog();
+    const scriptLog = new CourseLog();
+    const summaryLog = new CourseLog();
+
     const course = await getCourseByCourseId(courseId);
 
     if (!course) {
         throw new NotFoundError('course not found');
     }
-    log.course = course;
-    log.type = courseLogType.RECORDING;
-    log.recordKey = savedPath;
+    recordLog.course = course;
+    recordLog.type = courseLogType.RECORDING;
+    recordLog.recordKey = savedPath;
 
-    return courseLogRepository.save(log);
+    const instance = createInstance();
+
+    instance
+        .post('/path', {
+            path: audio.location,
+            filename: audio.originalname,
+        })
+        .then((response) => {
+            if (!response) {
+                throw new BadRequestError('Failed to connect AI server');
+            }
+            console.log(response.status);
+            console.log(response.data);
+
+            const data = response.data;
+
+            if (response.status !== 200 || !data) {
+                throw new BadRequestError('Failed to translate audio');
+            }
+
+            if (!data.file_name || !data.STT_text || !data.Sum_text) {
+                throw new BadRequestError('Failed to translate audio');
+            }
+
+            scriptLog.course = course;
+            scriptLog.type = courseLogType.SCRIPT;
+            scriptLog.script = data.STT_text;
+
+            summaryLog.course = course;
+            summaryLog.type = courseLogType.SUMMARY;
+            summaryLog.summary = data.Sum_text;
+
+            return courseLogRepository.save([recordLog, scriptLog, summaryLog]);
+        })
+        .catch((err) => console.log(err));
 };

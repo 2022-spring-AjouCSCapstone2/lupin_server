@@ -7,6 +7,7 @@ export enum courseLogType {
     QUESTION = 'QUESTION',
     RECORDING = 'RECORDING',
     SCRIPT = 'SCRIPT',
+    SUMMARY = 'SUMMARY',
 }
 
 export enum day {
