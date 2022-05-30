@@ -1,5 +1,5 @@
 import { courseRepository } from '~/repositories';
-import { day } from '~/config';
+import { day, userType } from '~/config';
 
 export const getCourses = () => {
     return courseRepository.find({
@@ -7,7 +7,15 @@ export const getCourses = () => {
     });
 };
 
-export const getMyCourses = (id: number) => {
+export const getMyCourses = (id: number, type: string) => {
+    if (type === userType.PROFESSOR) {
+        return courseRepository.find({
+            where: {
+                professor: { id },
+            },
+            relations: ['professor', 'timetables'],
+        });
+    }
     return courseRepository.find({
         where: {
             students: {
@@ -39,7 +47,7 @@ export const getCourseByCourseId = (courseId: string) => {
     });
 };
 
-export const getTodayCourses = (id: number) => {
+export const getTodayCourses = (id: number, type: string) => {
     const today = new Date().getDay();
     let dayParam;
     switch (today) {
@@ -67,6 +75,13 @@ export const getTodayCourses = (id: number) => {
         default:
             dayParam = 'NODAY';
             break;
+    }
+
+    if (type === 'PROFESSOR') {
+        return courseRepository.find({
+            where: { professor: { id }, timetables: { day: day[dayParam] } },
+            relations: ['professor', 'timetables'],
+        });
     }
     return courseRepository.find({
         where: { students: { id }, timetables: { day: day[dayParam] } },
