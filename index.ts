@@ -253,7 +253,7 @@ io.on('connection', (socket) => {
             if (
                 !data.roomId ||
                 !data.type ||
-                !data.isAnonymous ||
+                data.isAnonymous !== null ||
                 !data.content ||
                 !data.courseId
             ) {
