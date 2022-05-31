@@ -20,6 +20,10 @@ export const getUserById = (id: number) => {
     return userRepository.findOne({ where: { id } });
 };
 
+export const getUserByUserId = (userId: number) => {
+    return userRepository.findOne({ where: { userId } });
+};
+
 export const updatePassword = async (
     id: number,
     password: string,

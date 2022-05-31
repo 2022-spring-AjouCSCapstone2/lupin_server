@@ -2,6 +2,8 @@ import { statisticsRepository } from '~/repositories';
 import { UpdateStatisticsRequest } from '~/dto';
 import { getCourseByCourseId } from '~/services/courseService';
 import { BadRequestError } from '~/utils';
+import { Statistics } from '~/models';
+import { getUserByUserId } from '~/services/userService';
 
 export const updateStatistics = async (
     courseId: string,
@@ -13,6 +15,27 @@ export const updateStatistics = async (
         relations: ['course', 'user'],
     });
 
+    if (!statistics) {
+        const newStatistics = new Statistics();
+
+        const user = await getUserByUserId(userId);
+        const course = await getCourseByCourseId(courseId);
+
+        if (param.midtermExamScore) {
+            newStatistics.midtermExamScore = param.midtermExamScore;
+        }
+        if (param.finalExamScore) {
+            newStatistics.finalExamScore = param.finalExamScore;
+        }
+        if (param.quizScore) {
+            newStatistics.quizScore = param.quizScore;
+        }
+
+        newStatistics.user = user;
+        newStatistics.course = course;
+
+        return statisticsRepository.save(newStatistics);
+    }
     if (param.midtermExamScore) {
         statistics.midtermExamScore = param.midtermExamScore;
     }
