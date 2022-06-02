@@ -214,6 +214,7 @@ io.on('connection', (socket) => {
         );
 
         if (user.userType === 'PROFESSOR') {
+            socket.to(data.roomId).emit('roomClosed', { roomId: data.roomId });
             io.socketsLeave(data.roomId);
         } else {
             socket.leave(data.roomId);
