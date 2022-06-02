@@ -15,14 +15,14 @@ export const getPostsByCourseId = (
 ): Promise<Post[]> => {
     return postRepository.find({
         where: { course: { courseId }, type: postType[type] || postType.FREE },
-        relations: ['user'],
+        relations: ['user', 'comments', 'comments.user'],
     });
 };
 
 export const getPostByPostId = (postId: number): Promise<Post> => {
     return postRepository.findOne({
         where: { id: postId },
-        relations: ['user', 'comments'],
+        relations: ['user', 'comments', 'comments.user'],
     });
 };
 
