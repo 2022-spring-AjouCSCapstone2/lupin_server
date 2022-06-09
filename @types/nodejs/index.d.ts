@@ -1,4 +1,5 @@
 import { Session } from 'express-session';
+import { User } from '~/models';
 
 declare namespace NodeJS {
     interface ProcessEnv {
@@ -29,10 +30,6 @@ declare namespace NodeJS {
 declare module 'http' {
     interface IncomingMessage {
         session: Session;
-        user: {
-            id: number;
-            userId: number;
-            userType: string;
-        };
+        user: User;
     }
 }

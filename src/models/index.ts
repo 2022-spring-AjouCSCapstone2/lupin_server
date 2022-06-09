@@ -3,6 +3,7 @@ export * from './Course';
 export * from './CourseLog';
 export * from './Post';
 export * from './Quiz';
+export * from './QuizLog';
 export * from './QuizList';
 export * from './Statistics';
 export * from './Timetable';
