@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
-import { JoinRequest } from '~/dto';
+import { JoinRequest } from './dto';
 import { BadRequestError, ConflictError, NotFoundError } from '~/utils';
-import { userRepository } from '~/repositories';
+import { userRepository } from './userRepository';
 
 export const join = async (dto: JoinRequest) => {
     const user = dto.toEntity();

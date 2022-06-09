@@ -1,6 +1,6 @@
-import { quizLogRepository } from '~/repositories';
-import { QuizLog } from '~/models/QuizLog';
-import { getUserById, getQuizById } from '~/services';
+import { quizLogRepository, getQuizById } from '~/course';
+import { getUserById } from '~/user';
+import { QuizLog } from '~/models';
 
 export const saveQuizLog = async (params: {
     answer: number;

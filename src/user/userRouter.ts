@@ -11,7 +11,8 @@ import {
     LoginRequest,
     UpdatePasswordRequest,
     UpdateUserRequest,
-} from '~/dto';
+    UserResponse,
+} from './dto';
 import * as userService from './userService';
 
 const userRouter = Router();
@@ -22,7 +23,7 @@ userRouter.post(
     validationMiddleware(LoginRequest),
     passport.authenticate('local', { failureMessage: true }),
     (req, res, next) => {
-        res.status(200).json(req.user);
+        res.status(200).json(new UserResponse(req.user));
     },
 );
 
@@ -35,7 +36,7 @@ userRouter.post(
         userService
             .join(dto)
             .then((data) => {
-                res.status(201).json(data);
+                res.status(201).json(new UserResponse(data));
             })
             .catch(next);
     },
@@ -63,7 +64,7 @@ userRouter.patch(
         userService
             .updateUser(id, phone)
             .then((data) => {
-                res.json(data);
+                res.json(new UserResponse(data));
             })
             .catch(next);
     },
@@ -80,7 +81,7 @@ userRouter.patch(
         userService
             .updatePassword(id, password, newPassword)
             .then((data) => {
-                res.json(data);
+                res.json(new UserResponse(data));
             })
             .catch(next);
     },
@@ -98,7 +99,7 @@ userRouter.patch(
         userService
             .updateImagePath(id, location)
             .then((data) => {
-                res.json(data);
+                res.json(new UserResponse(data));
             })
             .catch(next);
     },

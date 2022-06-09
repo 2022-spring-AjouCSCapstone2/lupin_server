@@ -1,8 +1,7 @@
 import { RequestHandler } from 'express';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { HttpError, stringifyValidationErrors } from '~/utils';
-import { BaseDto } from '~/dto/BaseDto';
+import { HttpError, stringifyValidationErrors, BaseDto } from '~/utils';
 
 type baseObj = {
     new (): BaseDto;

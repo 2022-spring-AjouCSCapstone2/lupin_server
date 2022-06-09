@@ -1,9 +1,11 @@
-import { statisticsRepository } from '~/repositories';
-import { UpdateStatisticsRequest } from '~/dto';
-import { getCourseByCourseId } from '~/course/service/courseService';
-import { BadRequestError } from '~/utils';
+import {
+    statisticsRepository,
+    getCourseByCourseId,
+    UpdateStatisticsRequest,
+} from '~/course';
+import { getUserByUserId } from '~/user';
 import { Statistics } from '~/models';
-import { getUserByUserId } from '~/user/userService';
+import { BadRequestError } from '~/utils';
 
 export const updateStatistics = async (
     courseId: string,

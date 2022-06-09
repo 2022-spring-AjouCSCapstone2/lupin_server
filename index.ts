@@ -21,8 +21,9 @@ import {
     saveQuiz,
     saveQuizLog,
     updateStatistics,
+    SaveLogRequest,
+    SubmitQuizRequest,
 } from '~/course';
-import { SaveLogRequest, SubmitQuizRequest } from '~/dto';
 
 dataSource
     .initialize()

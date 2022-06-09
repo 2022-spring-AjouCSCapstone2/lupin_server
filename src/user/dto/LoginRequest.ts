@@ -1,5 +1,5 @@
 import { IsEmail, IsString, Length } from 'class-validator';
-import { BaseDto } from '~/dto';
+import { BaseDto } from '~/utils';
 
 export class LoginRequest extends BaseDto {
     @IsEmail()

@@ -4,6 +4,11 @@ import * as courseLogService from '~/course/service/courseLogService';
 import * as statisticsService from '~/course/service/statisticsService';
 import { isLoggedIn } from '~/middlewares';
 import { uploaderMiddleware } from '~/middlewares/uploaderMiddleware';
+import {
+    CourseLogResponse,
+    CourseResponse,
+    GetCourseLogQuery,
+} from '~/course/dto';
 
 const router = Router();
 
@@ -13,7 +18,7 @@ router.get('/', isLoggedIn, (req, res, next) => {
     courseService
         .getMyCourses(id, userType)
         .then((data) => {
-            res.json(data);
+            res.json(data.map((course) => new CourseResponse(course)));
         })
         .catch(next);
 });
@@ -23,7 +28,7 @@ router.get('/all', (req, res, next) => {
     courseService
         .getCourses()
         .then((data) => {
-            res.json(data);
+            res.json(data.map((course) => new CourseResponse(course)));
         })
         .catch(next);
 });
@@ -34,7 +39,7 @@ router.get('/today', isLoggedIn, (req, res, next) => {
     courseService
         .getTodayCourses(id, userType)
         .then((data) => {
-            res.json(data);
+            res.json(data.map((course) => new CourseResponse(course)));
         })
         .catch(next);
 });
@@ -44,12 +49,7 @@ router.get(
     isLoggedIn,
     (
         // eslint-disable-next-line @typescript-eslint/ban-types
-        req: Request<
-            { courseId: string },
-            unknown,
-            unknown,
-            { day: string; type: string }
-        >,
+        req: Request<{ courseId: string }, {}, {}, GetCourseLogQuery>,
         res,
         next,
     ) => {
@@ -58,7 +58,9 @@ router.get(
         courseLogService
             .getLogsByCourseId(courseId, req.query)
             .then((data) => {
-                res.json(data);
+                res.json(
+                    data.map((courseLog) => new CourseLogResponse(courseLog)),
+                );
             })
             .catch(next);
     },
@@ -99,7 +101,10 @@ router.get('/:courseId', (req, res, next) => {
     courseService
         .getCourseByCourseId(courseId)
         .then((data) => {
-            res.json(data);
+            if (!data) {
+                res.json({ status: 404, message: 'not found' });
+            }
+            res.json(new CourseResponse(data));
         })
         .catch(next);
 });

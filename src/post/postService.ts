@@ -1,6 +1,5 @@
 import { Comment, Post } from '~/models';
-import { SavePostRequest } from '~/dto';
-import { commentRepository, postRepository } from './repository';
+import { SavePostRequest, commentRepository, postRepository } from '~/post';
 import { courseRepository } from '~/course';
 import { userRepository } from '~/user';
 import { NotFoundError } from '~/utils';

@@ -1,7 +1,7 @@
 import { IsEmail, IsIn, IsNumber, IsString, Length } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { User } from '~/models';
-import { BaseDto } from '../BaseDto';
+import { BaseDto } from '~/utils';
 
 export class JoinRequest extends BaseDto {
     @IsString()

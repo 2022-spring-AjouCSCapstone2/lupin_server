@@ -1,4 +1,4 @@
-import { courseRepository } from '~/repositories';
+import { courseRepository } from '~/course';
 import { day, userType } from '~/config';
 
 export const getCourses = () => {

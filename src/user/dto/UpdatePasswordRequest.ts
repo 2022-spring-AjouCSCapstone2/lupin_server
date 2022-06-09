@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, Length } from 'class-validator';
-import { BaseDto } from '~/dto';
+import { BaseDto } from '~/utils';
 
 export class UpdatePasswordRequest extends BaseDto {
     @IsNotEmpty()

@@ -1,7 +1,7 @@
 import { IsEmpty, IsString } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { Post } from '~/models';
-import { BaseDto } from '../BaseDto';
+import { BaseDto } from '~/utils';
 
 export class SavePostRequest extends BaseDto {
     @IsString()

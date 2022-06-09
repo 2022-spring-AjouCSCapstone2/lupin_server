@@ -5,7 +5,7 @@ import {
     PostResponse,
     SaveCommentRequest,
     SavePostRequest,
-} from '~/dto';
+} from './dto';
 import * as postService from './postService';
 
 const router = Router();
