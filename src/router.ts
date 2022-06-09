@@ -1,8 +1,8 @@
 import express from 'express';
 
-import userRouter from './userRouter';
-import courseRouter from './courseRouter';
-import postRouter from './postRouter';
+import userRouter from '~/user/userRouter';
+import courseRouter from '~/course/courseRouter';
+import postRouter from '~/post/postRouter';
 
 const router = express.Router();
 

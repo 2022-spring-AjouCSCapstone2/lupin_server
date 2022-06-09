@@ -1,7 +1,7 @@
 import { Request, Router } from 'express';
-import * as courseService from '~/services/courseService';
-import * as courseLogService from '~/services/courseLogService';
-import * as statisticsService from '~/services/statisticsService';
+import * as courseService from '~/course/service/courseService';
+import * as courseLogService from '~/course/service/courseLogService';
+import * as statisticsService from '~/course/service/statisticsService';
 import { isLoggedIn } from '~/middlewares';
 import { uploaderMiddleware } from '~/middlewares/uploaderMiddleware';
 

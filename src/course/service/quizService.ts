@@ -1,6 +1,6 @@
 import { SubmitQuizRequest } from '~/dto';
 import { quizRepository } from '~/repositories';
-import { getCourseByCourseId } from '~/services/courseService';
+import { getCourseByCourseId } from '~/course/service/courseService';
 
 export const saveQuiz = async (params: SubmitQuizRequest) => {
     const { roomId } = params;

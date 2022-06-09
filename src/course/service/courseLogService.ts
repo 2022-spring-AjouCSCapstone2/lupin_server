@@ -1,7 +1,7 @@
 import { courseLogRepository } from '~/repositories';
 import { SaveLogRequest } from '~/dto';
-import { getUserById } from '~/services/userService';
-import { getCourseByCourseId } from '~/services/courseService';
+import { getUserById } from '~/user/userService';
+import { getCourseByCourseId } from '~/course/service/courseService';
 import { CourseLog } from '~/models';
 import { NotFoundError, createInstance, BadRequestError } from '~/utils';
 import { courseLogType } from '~/config';

@@ -1,13 +1,22 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { isLoggedIn, isNotLoggedIn, validationMiddleware } from '~/middlewares';
-import { JoinRequest, LoginRequest, UpdatePasswordRequest } from '~/dto';
-import * as userService from '~/services';
-import { uploaderMiddleware } from '~/middlewares/uploaderMiddleware';
+import {
+    isLoggedIn,
+    isNotLoggedIn,
+    validationMiddleware,
+    uploaderMiddleware,
+} from '~/middlewares';
+import {
+    JoinRequest,
+    LoginRequest,
+    UpdatePasswordRequest,
+    UpdateUserRequest,
+} from '~/dto';
+import * as userService from './userService';
 
-const router = Router();
+const userRouter = Router();
 
-router.post(
+userRouter.post(
     '/login',
     isNotLoggedIn,
     validationMiddleware(LoginRequest),
@@ -17,18 +26,22 @@ router.post(
     },
 );
 
-router.post('/join', validationMiddleware(JoinRequest), (req, res, next) => {
-    const dto: JoinRequest = req.body;
+userRouter.post(
+    '/join',
+    validationMiddleware(JoinRequest),
+    (req, res, next) => {
+        const dto: JoinRequest = req.body;
 
-    userService
-        .join(dto)
-        .then((data) => {
-            res.status(201).json(data);
-        })
-        .catch(next);
-});
+        userService
+            .join(dto)
+            .then((data) => {
+                res.status(201).json(data);
+            })
+            .catch(next);
+    },
+);
 
-router.get('/logout', isLoggedIn, (req, res, next) => {
+userRouter.get('/logout', isLoggedIn, (req, res, next) => {
     req.logout();
     req.session.destroy((err) => {
         if (err) {
@@ -39,19 +52,24 @@ router.get('/logout', isLoggedIn, (req, res, next) => {
     });
 });
 
-router.patch('/', isLoggedIn, (req, res, next) => {
-    const { id } = req.user;
-    const { phone } = req.body;
+userRouter.patch(
+    '/',
+    isLoggedIn,
+    validationMiddleware(UpdateUserRequest),
+    (req, res, next) => {
+        const { id } = req.user;
+        const { phone } = req.body;
 
-    userService
-        .updateUser(id, phone)
-        .then((data) => {
-            res.json(data);
-        })
-        .catch(next);
-});
+        userService
+            .updateUser(id, phone)
+            .then((data) => {
+                res.json(data);
+            })
+            .catch(next);
+    },
+);
 
-router.patch(
+userRouter.patch(
     '/password',
     isLoggedIn,
     validationMiddleware(UpdatePasswordRequest),
@@ -68,7 +86,7 @@ router.patch(
     },
 );
 
-router.patch(
+userRouter.patch(
     '/image',
     isLoggedIn,
     uploaderMiddleware.single('image'),
@@ -86,4 +104,4 @@ router.patch(
     },
 );
 
-export default router;
+export default userRouter;

@@ -10,7 +10,7 @@ import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import cors from 'cors';
-import router from '~/routes';
+import router from '~/router';
 import { session } from '~/middlewares';
 import { dataSource, passportConfig } from '~/config';
 import {
@@ -20,9 +20,9 @@ import {
     getQuizById,
     saveQuiz,
     saveQuizLog,
-} from '~/services';
-import { SaveLogRequest, SubmitQuizRequest } from './src/dto';
-import { updateStatistics } from './src/services/statisticsService';
+    updateStatistics,
+} from '~/course';
+import { SaveLogRequest, SubmitQuizRequest } from '~/dto';
 
 dataSource
     .initialize()

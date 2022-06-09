@@ -6,7 +6,7 @@ import {
     SaveCommentRequest,
     SavePostRequest,
 } from '~/dto';
-import * as postService from '~/services/postService';
+import * as postService from './postService';
 
 const router = Router();
 
