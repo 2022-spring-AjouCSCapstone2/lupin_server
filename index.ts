@@ -42,14 +42,7 @@ const server = require('http').createServer(app);
 const io = new Server(server, {
     cookie: true,
     cors: {
-        origin: [
-            'http://localhost:3000',
-            'http://10.0.4.39:3000',
-            'http://3.34.161.32:3000',
-            'https://lupin.today',
-            'http://lupin.today',
-            '*',
-        ],
+        origin: ['http://localhost:3000', '*'],
         methods: ['GET', 'POST'],
         credentials: true,
     },
@@ -57,14 +50,7 @@ const io = new Server(server, {
 
 app.use(
     cors({
-        origin: [
-            'http://localhost:3000',
-            'http://10.0.4.39:3000',
-            'http://3.34.161.32:3000',
-            'https://lupin.today',
-            'http://lupin.today',
-            '*',
-        ],
+        origin: ['http://localhost:3000', '*'],
         credentials: true,
     }),
 );
@@ -129,23 +115,12 @@ io.on('connection', (socket) => {
         socket.request.user,
     );
 
-    socket.on('showRoom', (info) => {
-        socket.emit(
-            'showRoom',
-            JSON.stringify(Array.from(io.sockets.adapter.rooms.entries())),
-        );
+    socket.on('disconnect', () => {
+        const user = socket.request.user;
+        console.log(`a user ${user?.userId} disconnected`);
     });
 
-    socket.on('test', (info, callback) => {
-        console.log(`current user : ${socket.request.user}`);
-        console.log(`current rooms : ${io.sockets.adapter.rooms.entries()}`);
-
-        callback({
-            headers: socket.request.headers,
-            user: socket.request.user,
-        });
-    });
-
+    // 방 생성 로직
     socket.on('createRoom', (data: { courseId: string }, callback) => {
         const user = socket.request.user;
         const roomId = `${data.courseId}-${+new Date()}`;
@@ -170,6 +145,7 @@ io.on('connection', (socket) => {
         callback({ status: 'success', data: roomId });
     });
 
+    // 방 참가 로직
     socket.on('joinRoom', async (data: { courseId: string }, callback) => {
         const user = socket.request.user;
 
@@ -203,6 +179,7 @@ io.on('connection', (socket) => {
         }
     });
 
+    // 방 퇴장 및 종료 로직
     socket.on('leaveRoom', (data: { roomId: string }, callback) => {
         const user = socket.request.user;
 
@@ -228,16 +205,7 @@ io.on('connection', (socket) => {
         callback({ status: 'success' });
     });
 
-    socket.on('message', (data) => {
-        console.log(data);
-    });
-
-    socket.on('disconnect', () => {
-        const user = socket.request.user;
-        console.log(`a user ${user?.userId} disconnected`);
-    });
-
-    // 익명 질문, 포인트 증감, 퀴즈 출제
+    // 익명 질문
     socket.on(
         'question',
         async (
@@ -276,6 +244,7 @@ io.on('connection', (socket) => {
         },
     );
 
+    // 질문에 대한 가산점 입력
     socket.on(
         'checkQuestion',
         async (data: { logId: number; point: boolean }, callback) => {
@@ -305,6 +274,7 @@ io.on('connection', (socket) => {
         },
     );
 
+    // 실시간 퀴즈 출제
     socket.on(
         'quiz',
         async (
@@ -345,6 +315,7 @@ io.on('connection', (socket) => {
         },
     );
 
+    // 실시간 퀴즈에 대한 응답
     socket.on(
         'quizAnswer',
         async (data: { quizId: number; answer: number }, callback) => {
